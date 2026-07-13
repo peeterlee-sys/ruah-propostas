@@ -504,24 +504,14 @@
     overflow: hidden;
   }
 
-  .doc-capa::after {
-    content: "";
-    position: absolute;
-    right: -80px;
-    top: -80px;
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(224,195,137,.22), transparent 65%);
-  }
-
   .doc-capa .logo-capa {
-    height: 46px;
-    display: block;
-    margin-bottom: 26px;
+    height: 28px;
+    position: absolute;
+    top: 40px;
+    right: 48px;
   }
 
-  .doc-capa h1 { margin: 0 0 10px; font-size: 33px; }
+  .doc-capa h1 { margin: 6px 0 10px; font-size: 33px; padding-right: 190px; }
 
   .doc-capa .sub { max-width: 620px; color: #d9e2ec; line-height: 1.55; font-size: 14.5px; margin: 0; }
 
@@ -743,6 +733,8 @@
     main { padding: 18px 16px 130px; }
     .topo { padding: 16px 16px 0; }
     .doc-capa, .doc-corpo { padding-left: 26px; padding-right: 26px; }
+    .doc-capa .logo-capa { right: 26px; top: 30px; height: 24px; }
+    .doc-capa h1 { padding-right: 0; margin-top: 40px; }
   }
 
   /* ===================== IMPRESSÃO ===================== */
