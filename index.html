@@ -778,6 +778,23 @@
     margin: 0 auto 22px;
   }
 
+  /* molde de impressão do contrato: thead/tfoot repetem em toda página,
+     criando margens sem ativar o cabeçalho automático do navegador */
+  .print-molde {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .print-molde > thead td, .print-molde > tbody td, .print-molde > tfoot td {
+    padding: 0;
+    border: 0;
+    font-size: inherit;
+  }
+
+  .print-espaco-topo, .print-espaco-rodape { height: 0; }
+
   .doc-contrato h1 {
     text-align: center;
     font-size: 15px;
@@ -879,8 +896,10 @@
     body.print-contrato .doc-contrato {
       box-shadow: none;
       border-radius: 0;
-      padding: 4mm 16mm 6mm;
+      padding: 0 16mm;
     }
+    body.print-contrato .print-espaco-topo { height: 14mm; }
+    body.print-contrato .print-espaco-rodape { height: 14mm; }
     .doc-contrato .clausula, .doc-contrato .assinaturas { break-inside: avoid; }
   }
 </style>
@@ -1712,7 +1731,7 @@
   function imprimir() {
     if (!validarAntesDeEnviar()) return;
     renderDocumento();
-    window.print();
+    imprimirComTitulo('Proposta de Mídia | Ruah');
   }
 
   function textoWhatsApp() {
@@ -2082,7 +2101,7 @@
     var codigo = contrato.codigo || proximoCodigoContrato(false);
     var vinculo = contrato.propostaCodigo ? ' · Proposta ' + escaparHtml(contrato.propostaCodigo) : '';
 
-    $('docContrato').innerHTML =
+    var corpoContrato =
       '<img class="logo-contrato" src="' + LOGO_AZUL + '" alt="RUAH" />' +
       '<h1>Contrato de Veiculação de Publicidade em Painel Eletrônico de LED</h1>' +
       '<div class="sub-codigo">' + codigo + vinculo + '</div>' +
@@ -2160,6 +2179,13 @@
         '<div class="linha-ass"><strong>' + campo(cli.razao, 'Razão social do cliente') + '</strong><br/>CNPJ/CPF: ' + campo(cli.doc, 'CNPJ/CPF') + '<br/>CONTRATANTE</div>' +
       '</div>';
 
+    $('docContrato').innerHTML =
+      '<table class="print-molde">' +
+        '<thead><tr><td><div class="print-espaco-topo"></div></td></tr></thead>' +
+        '<tbody><tr><td>' + corpoContrato + '</td></tr></tbody>' +
+        '<tfoot><tr><td><div class="print-espaco-rodape"></div></td></tr></tfoot>' +
+      '</table>';
+
     var faltas = pendenciasContrato();
     var aviso = $('avisoPendencias');
     if (faltas.length) {
@@ -2170,20 +2196,22 @@
     }
   }
 
+  function imprimirComTitulo(tituloPdf) {
+    var original = document.title;
+    document.title = tituloPdf;
+    var restaurar = function () {
+      document.title = original;
+      window.removeEventListener('afterprint', restaurar);
+    };
+    window.addEventListener('afterprint', restaurar);
+    window.print();
+    setTimeout(restaurar, 3000);
+  }
+
   function imprimirContrato() {
     lerFormularioContrato();
     renderDocContrato();
-    // margens de página só na impressão do contrato (a proposta imprime sem margens)
-    var st = document.createElement('style');
-    st.textContent = '@page { size: A4; margin: 14mm 0; }';
-    document.head.appendChild(st);
-    var limpar = function () {
-      if (st.parentNode) st.parentNode.removeChild(st);
-      window.removeEventListener('afterprint', limpar);
-    };
-    window.addEventListener('afterprint', limpar);
-    window.print();
-    setTimeout(limpar, 3000);
+    imprimirComTitulo('Contrato de Mídia | Ruah');
   }
 
   function salvarContratoAtual() {
