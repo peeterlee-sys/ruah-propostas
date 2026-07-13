@@ -737,6 +737,10 @@
     .doc-capa h1 { padding-right: 0; margin-top: 40px; }
   }
 
+  /* link do mapa: texto amigável na tela, URL visível no PDF impresso */
+  .so-print { display: none; }
+  .so-print a { color: var(--azul); word-break: break-all; font-size: 11px; }
+
   /* ===================== IMPRESSÃO ===================== */
   @media print {
     @page { size: A4; margin: 0; }
@@ -749,6 +753,8 @@
     .doc-capa { border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .doc-tabela tr, .metrica, .condicao, .caixa-destaque { break-inside: avoid; }
+    .so-tela { display: none; }
+    .so-print { display: inline; }
   }
 </style>
 </head>
@@ -988,15 +994,15 @@
      CATÁLOGO PADRÃO
   ============================================================ */
   var CATALOGO_PADRAO = [
-    { id: 'rua-1', categoria: 'rua', nome: 'Av. Atlântica - Praça Tamandaré', endereco: 'Av. Atlântica, 1940 - Centro, Balneário Camboriú - SC', tamanho: '8x2m', resolucao: '2000x500px', impacto: '2,5 milhões', impactoNumero: 2500000, maps: 'https://encurtador.com.br/xrYG', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 4200 },
-    { id: 'rua-2', categoria: 'rua', nome: 'Avenida Brasil', endereco: 'Av. Brasil, 1410 - Centro, Balneário Camboriú - SC', tamanho: '3x7m', resolucao: '900x2100px', impacto: '2,7 milhões', impactoNumero: 2700000, maps: 'https://encurtador.com.br/HnLg', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 3000 },
-    { id: 'rua-3', categoria: 'rua', nome: 'Avenida Brasil - Próximo ao Calçadão', endereco: 'Avenida Brasil, 1600 - Centro, Balneário Camboriú - SC', tamanho: '2x4m', resolucao: '384x768px', impacto: '2,7 milhões', impactoNumero: 2700000, maps: 'https://encurtador.com.br/JizC', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 3000 },
-    { id: 'rua-4', categoria: 'rua', nome: '3ª Avenida', endereco: 'Terceira Avenida, 1790 - Centro, Balneário Camboriú - SC', tamanho: '7x3m', resolucao: '1344x576px', impacto: '1,5 milhão', impactoNumero: 1500000, maps: 'https://encurtador.com.br/WPjd', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
-    { id: 'rua-5', categoria: 'rua', nome: '4ª Avenida - Rua 2650', endereco: '4ª Av. - Centro, Balneário Camboriú - SC', tamanho: '7x3m', resolucao: '1750x750px', impacto: '1,7 milhão', impactoNumero: 1700000, maps: 'https://encurtador.com.br/Pmwl', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
-    { id: 'rua-6', categoria: 'rua', nome: '4ª Avenida - Rua 3100', endereco: 'R. 3100, 855 - Centro, Balneário Camboriú - SC', tamanho: '7x4m', resolucao: '840x480px', impacto: '3,2 milhões', impactoNumero: 3200000, maps: 'https://encurtador.com.br/zwwA', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
-    { id: 'rua-7', categoria: 'rua', nome: 'Av. do Estado - Entrada da Cidade', endereco: 'Av. do Estado Dalmo Vieira, 5029 - Centro, Balneário Camboriú - SC', tamanho: '5x3m', resolucao: '1250x750px', impacto: '5,5 milhões', impactoNumero: 5500000, maps: 'https://encurtador.com.br/QMEo', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
-    { id: 'rua-8', categoria: 'rua', nome: 'Av. do Estado - Hotel Vieiras', endereco: 'R. México, 25 - Nações, Balneário Camboriú - SC', tamanho: '3x8m', resolucao: '900x2400px', impacto: '2,5 milhões', impactoNumero: 2500000, maps: 'https://encurtador.com.br/hhFq', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
-    { id: 'rua-9', categoria: 'rua', nome: 'Avenida Martin Luther', endereco: 'Av. Martin Luther, esq. Rua Venezuela - Ariribá, Balneário Camboriú - SC', tamanho: '7x3m', resolucao: '1344x576px', impacto: '1,5 milhão', impactoNumero: 1500000, maps: 'https://encurtador.com.br/WPjd', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
+    { id: 'rua-1', categoria: 'rua', nome: 'Av. Atlântica - Praça Tamandaré', endereco: 'Av. Atlântica, 1940 - Centro, Balneário Camboriú - SC', tamanho: '8x2m', resolucao: '2000x500px', impacto: '2,5 milhões', impactoNumero: 2500000, maps: 'https://maps.google.com/?q=-26.9870403,-48.6323537', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 4200 },
+    { id: 'rua-2', categoria: 'rua', nome: 'Avenida Brasil', endereco: 'Av. Brasil, 1410 - Centro, Balneário Camboriú - SC', tamanho: '3x7m', resolucao: '900x2100px', impacto: '2,7 milhões', impactoNumero: 2700000, maps: 'https://maps.google.com/?q=-26.9864357,-48.6350845', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 3000 },
+    { id: 'rua-3', categoria: 'rua', nome: 'Avenida Brasil - Próximo ao Calçadão', endereco: 'Avenida Brasil, 1600 - Centro, Balneário Camboriú - SC', tamanho: '2x4m', resolucao: '384x768px', impacto: '2,7 milhões', impactoNumero: 2700000, maps: 'https://maps.google.com/?q=-26.9879011,-48.63396', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 3000 },
+    { id: 'rua-4', categoria: 'rua', nome: '3ª Avenida', endereco: 'Terceira Avenida, 1790 - Centro, Balneário Camboriú - SC', tamanho: '7x3m', resolucao: '1344x576px', impacto: '1,5 milhão', impactoNumero: 1500000, maps: 'https://maps.google.com/?q=-27.0006435,-48.6302175', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
+    { id: 'rua-5', categoria: 'rua', nome: '4ª Avenida - Rua 2650', endereco: '4ª Av. - Centro, Balneário Camboriú - SC', tamanho: '7x3m', resolucao: '1750x750px', impacto: '1,7 milhão', impactoNumero: 1700000, maps: 'https://maps.google.com/?q=-27.0009885,-48.6361143', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
+    { id: 'rua-6', categoria: 'rua', nome: '4ª Avenida - Rua 3100', endereco: 'R. 3100, 855 - Centro, Balneário Camboriú - SC', tamanho: '7x4m', resolucao: '840x480px', impacto: '3,2 milhões', impactoNumero: 3200000, maps: 'https://maps.google.com/?q=-27.0023582,-48.6304474', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
+    { id: 'rua-7', categoria: 'rua', nome: 'Av. do Estado - Entrada da Cidade', endereco: 'Av. do Estado Dalmo Vieira, 5029 - Centro, Balneário Camboriú - SC', tamanho: '5x3m', resolucao: '1250x750px', impacto: '5,5 milhões', impactoNumero: 5500000, maps: 'https://maps.google.com/?q=-26.9981464,-48.6453622', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
+    { id: 'rua-8', categoria: 'rua', nome: 'Av. do Estado - Hotel Vieiras', endereco: 'R. México, 25 - Nações, Balneário Camboriú - SC', tamanho: '3x8m', resolucao: '900x2400px', impacto: '2,5 milhões', impactoNumero: 2500000, maps: 'https://maps.google.com/?q=-26.9802842,-48.6402767', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
+    { id: 'rua-9', categoria: 'rua', nome: 'Avenida Martin Luther', endereco: 'Av. Martin Luther, esq. Rua Venezuela - Ariribá, Balneário Camboriú - SC', tamanho: '7x3m', resolucao: '1344x576px', impacto: '1,5 milhão', impactoNumero: 1500000, maps: 'https://maps.google.com/?q=-26.9728729,-48.6486129', insercoes: '500 inserções de 10" por dia · 15.000/mês', valor: 2500 },
     { id: 'shop-1', categoria: 'shopping', nome: 'Shopping Atlântico - Totens de LED', endereco: 'Atlântico Shopping - Balneário Camboriú - SC', tamanho: '77cm x 1,53m', resolucao: '256x512px', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 8450 },
     { id: 'shop-2', categoria: 'shopping', nome: 'Shopping Atlântico - Entrada do Estacionamento', endereco: 'Rampa principal de acesso ao estacionamento', tamanho: '5,76m x 0,80m', resolucao: '1440x200px', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 650 },
     { id: 'shop-3', categoria: 'shopping', nome: 'Shopping Atlântico - Praça de Eventos', endereco: 'Praça de Eventos do Atlântico Shopping', tamanho: '9,60m x 1,44m', resolucao: '2400x360px', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 1500 },
@@ -1371,7 +1377,10 @@
     var linhas = estado.itens.map(function (i) {
       return '<tr>' +
         '<td><strong>' + escaparHtml(i.nome) + '</strong><br/><small>' + escaparHtml(i.endereco) + '</small>' +
-        (i.maps ? '<br/><small><a href="' + escaparHtml(i.maps) + '" style="color:#14243e;">📍 Ver localização</a></small>' : '') +
+        (i.maps
+          ? '<br/><small class="so-tela"><a href="' + escaparHtml(i.maps) + '" style="color:#14243e;">📍 Ver localização</a></small>' +
+            '<small class="so-print">📍 <a href="' + escaparHtml(i.maps) + '">' + escaparHtml(i.maps) + '</a></small>'
+          : '') +
         '</td>' +
         '<td>MP4 · 10s<br/><small>' + escaparHtml(i.tamanho) + ' · ' + escaparHtml(i.resolucao) + '</small>' +
         (i.insercoes ? '<br/><small>' + escaparHtml(i.insercoes) + '</small>' : '') + '</td>' +
