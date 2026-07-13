@@ -1989,6 +1989,52 @@
     return 'CONT-' + ano + '-' + String(n).padStart(3, '0');
   }
 
+  function extensoInteiro(n) {
+    n = Math.floor(Math.abs(Number(n) || 0));
+    if (n === 0) return 'zero';
+    var u = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+    var d = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+    var c = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+
+    function ate999(x) {
+      if (x === 0) return '';
+      if (x === 100) return 'cem';
+      var partes = [];
+      var cc = Math.floor(x / 100), resto = x % 100;
+      if (cc) partes.push(c[cc]);
+      if (resto) {
+        if (resto < 20) partes.push(u[resto]);
+        else partes.push(d[Math.floor(resto / 10)] + (resto % 10 ? ' e ' + u[resto % 10] : ''));
+      }
+      return partes.join(' e ');
+    }
+
+    var milhoes = Math.floor(n / 1000000);
+    var milhares = Math.floor((n % 1000000) / 1000);
+    var resto = n % 1000;
+    var partes = [];
+    if (milhoes) partes.push(milhoes === 1 ? 'um milhão' : ate999(milhoes) + ' milhões');
+    if (milhares) partes.push(milhares === 1 ? 'mil' : ate999(milhares) + ' mil');
+    if (resto) partes.push(ate999(resto));
+    return partes.join(' e ');
+  }
+
+  function valorPorExtenso(v) {
+    v = Math.round(Number(v || 0) * 100) / 100;
+    var reais = Math.floor(v);
+    var centavos = Math.round((v - reais) * 100);
+    var partes = [];
+    if (reais > 0) {
+      var de = (reais % 1000000 === 0) ? ' de' : '';
+      partes.push(extensoInteiro(reais) + de + (reais === 1 ? ' real' : ' reais'));
+    }
+    if (centavos > 0) {
+      partes.push(extensoInteiro(centavos) + (centavos === 1 ? ' centavo' : ' centavos'));
+    }
+    if (!partes.length) return 'zero reais';
+    return partes.join(' e ');
+  }
+
   function somarMeses(iso, meses) {
     if (!iso) return '';
     var p = iso.split('-').map(Number);
@@ -2087,7 +2133,9 @@
 
   function renderDocContrato() {
     var n = 0;
-    function clausula(titulo) { n++; return '<div class="clausula">Cláusula ' + n + 'ª — ' + titulo + '</div>'; }
+    var nSub = 0;
+    function clausula(titulo) { n++; nSub = 0; return '<div class="clausula">Cláusula ' + n + 'ª — ' + titulo + '</div>'; }
+    function sub(texto) { nSub++; return '<p>' + n + '.' + nSub + ' ' + texto + '</p>'; }
 
     var cli = contrato.cliente;
     var enderecoCliente = (cli.logradouro || cli.numero)
@@ -2109,22 +2157,22 @@
       '<p>Por este instrumento particular, de um lado, <strong>' + campo(empresa.razao, 'Razão social da Ruah') + '</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ' + campo(empresa.cnpj, 'CNPJ da Ruah') + ', com sede em ' + campo(empresa.endereco, 'Endereço da Ruah') + ', neste ato representada por ' + campo(empresa.respNome, 'Responsável da Ruah') + ', inscrito no CPF sob nº ' + campo(empresa.respCpf, 'CPF do responsável') + ', doravante denominada simplesmente <strong>CONTRATADA</strong>; e <strong>' + campo(cli.razao, 'Razão social do cliente') + '</strong>, inscrita no CNPJ/CPF sob nº ' + campo(cli.doc, 'CNPJ/CPF do cliente') + ', com sede em ' + campo(enderecoCliente, 'Endereço do cliente') + ', neste ato representada por ' + campo(cli.representante, 'Representante do cliente') + ', doravante denominada simplesmente <strong>CONTRATANTE</strong>, têm entre si justo e acertado o presente contrato, que se regerá pelas disposições legais aplicáveis e pelas cláusulas abaixo:</p>' +
 
       clausula('Do Objeto') +
-      '<p>O presente contrato tem por objeto a veiculação de publicidade em Painel(éis) Eletrônico(s) de LED instalado(s) pela CONTRATADA, conforme relação abaixo, com indicação de localização e dimensões:</p>' +
+      sub('O presente contrato tem por objeto a veiculação de publicidade em Painel(éis) Eletrônico(s) de LED instalado(s) pela CONTRATADA, conforme relação abaixo, com indicação de localização e dimensões:') +
       (contrato.itens.length ? '<ul>' + listaItens + '</ul>' : '<p><span class="falta">[Nenhum painel — gere o contrato a partir de uma proposta]</span></p>') +
 
       clausula('Do Número e Tempo de Inserções') +
-      '<p>A CONTRATADA obriga-se a realizar, no mínimo, 250 (duzentas e cinquenta) inserções diárias em cada painel, com duração de 10 (dez) segundos cada, distribuídas igualmente ao longo do período de funcionamento, totalizando no mínimo 7.500 (sete mil e quinhentas) inserções por mês em cada painel, durante a vigência deste contrato.</p>' +
-      '<p><strong>Parágrafo único:</strong> Se o funcionamento dos painéis for interrompido, a CONTRATADA fica obrigada a repor as inserções devidas durante o tempo de paralisação.</p>' +
+      sub('A CONTRATADA obriga-se a realizar, no mínimo, 250 (duzentas e cinquenta) inserções diárias em cada painel, com duração de 10 (dez) segundos cada, distribuídas igualmente ao longo do período de funcionamento, totalizando no mínimo 7.500 (sete mil e quinhentas) inserções por mês em cada painel, durante a vigência deste contrato.') +
+      sub('Se o funcionamento dos painéis for interrompido, a CONTRATADA fica obrigada a repor as inserções devidas durante o tempo de paralisação.') +
 
       clausula('Do Prazo') +
-      '<p>O presente contrato terá duração de ' + contrato.meses + ' (' + numeroBR(contrato.meses) + ') ' + (contrato.meses === 1 ? 'mês' : 'meses') + ', com início em ' + campo(dataBR(contrato.inicio) !== '-' ? dataBR(contrato.inicio) : '', 'Data de início') + ' e término em ' + campo(dataBR(contrato.fim) !== '-' ? dataBR(contrato.fim) : '', 'Data de término') + ', podendo ser renovado por igual período mediante prévia e expressa manifestação das partes.</p>' +
+      sub('O presente contrato terá duração de ' + contrato.meses + ' (' + extensoInteiro(contrato.meses) + ') ' + (contrato.meses === 1 ? 'mês' : 'meses') + ', com início em ' + campo(dataBR(contrato.inicio) !== '-' ? dataBR(contrato.inicio) : '', 'Data de início') + ' e término em ' + campo(dataBR(contrato.fim) !== '-' ? dataBR(contrato.fim) : '', 'Data de término') + ', podendo ser renovado por igual período mediante prévia e expressa manifestação das partes.') +
 
       clausula('Do Valor') +
-      '<p>A CONTRATANTE pagará à CONTRATADA o valor mensal de <strong>' + moeda(contrato.mensal) + '</strong>' + (contrato.total > 0 ? ' (total do contrato: ' + moeda(contrato.total) + ')' : '') + ', mediante boleto bancário enviado pela CONTRATADA, sendo o primeiro vencimento na data acordada entre as partes.</p>' +
-      '<p>O boleto e a nota fiscal referentes a este contrato serão enviados à CONTRATANTE para o seguinte endereço eletrônico: ' + campo(cli.email, 'E-mail do cliente') + '.</p>' +
+      sub('A CONTRATANTE pagará à CONTRATADA o valor mensal de <strong>' + moeda(contrato.mensal) + '</strong> (' + valorPorExtenso(contrato.mensal) + ')' + (contrato.total > 0 ? ', totalizando ' + moeda(contrato.total) + ' (' + valorPorExtenso(contrato.total) + ') no período contratado' : '') + ', mediante boleto bancário enviado pela CONTRATADA, sendo o primeiro vencimento na data acordada entre as partes.') +
+      sub('O boleto e a nota fiscal referentes a este contrato serão enviados à CONTRATANTE para o seguinte endereço eletrônico: ' + campo(cli.email, 'E-mail do cliente') + '.') +
 
       clausula('Das Obrigações') +
-      '<p><strong>I. Caberá à CONTRATADA:</strong></p>' +
+      sub('<strong>Caberá à CONTRATADA:</strong>') +
       '<ul>' +
         '<li>Pagar toda e qualquer despesa decorrente da instalação, manutenção e retirada da estrutura;</li>' +
         '<li>Veicular a publicidade no local e no tempo previstos neste contrato;</li>' +
@@ -2132,7 +2180,7 @@
         '<li>Zelar pela visualização dos painéis e dos dizeres do anúncio;</li>' +
         '<li>Arcar com os custos de inserção e do software necessário à perfeita transmissão da mensagem, zelando pela qualidade técnica da veiculação.</li>' +
       '</ul>' +
-      '<p><strong>II. Caberá à CONTRATANTE:</strong></p>' +
+      sub('<strong>Caberá à CONTRATANTE:</strong>') +
       '<ul>' +
         '<li>Fornecer, no prazo de 5 (cinco) dias após o fechamento do contrato, o VT de publicidade a ser veiculado;</li>' +
         '<li>Pagar pontualmente o valor mensal previsto enquanto perdurar o contrato;</li>' +
@@ -2141,38 +2189,38 @@
       '</ul>' +
 
       clausula('Da Mora') +
-      '<p>O não pagamento na data fixada implicará multa de 2% (dois por cento) sobre o valor em atraso, correção monetária pelo IPCA/IBGE e juros moratórios de 1% (um por cento) ao mês. Persistindo o atraso por prazo superior a 30 (trinta) dias, a CONTRATADA poderá rescindir automaticamente o contrato, paralisando a veiculação da publicidade, sem prejuízo das demais medidas cabíveis.</p>' +
+      sub('O não pagamento na data fixada implicará multa de 2% (dois por cento) sobre o valor em atraso, correção monetária pelo IPCA/IBGE e juros moratórios de 1% (um por cento) ao mês. Persistindo o atraso por prazo superior a 30 (trinta) dias, a CONTRATADA poderá rescindir automaticamente o contrato, paralisando a veiculação da publicidade, sem prejuízo das demais medidas cabíveis.') +
 
       clausula('Da Rescisão') +
-      '<p>Constituirá motivo de rescisão, independentemente de notificação judicial ou extrajudicial:</p>' +
+      sub('Constituirá motivo de rescisão, independentemente de notificação judicial ou extrajudicial:') +
       '<ul>' +
         '<li>a) O pedido de falência, dissolução, liquidação ou recuperação judicial ou extrajudicial de qualquer das partes;</li>' +
         '<li>b) A insolvência comprovada de qualquer das partes;</li>' +
         '<li>c) A inobservância de qualquer cláusula contratual, em especial o inadimplemento injustificado da CONTRATANTE nos pagamentos ou da CONTRATADA na execução dos serviços.</li>' +
       '</ul>' +
-      '<p>Qualquer tolerância quanto à cobrança de multa ou ao cumprimento de obrigação não implicará renúncia, novação ou alteração do contrato, configurando mera liberalidade.</p>' +
+      sub('Qualquer tolerância quanto à cobrança de multa ou ao cumprimento de obrigação não implicará renúncia, novação ou alteração do contrato, configurando mera liberalidade.') +
 
       clausula('Do Sigilo e da Proteção de Dados') +
-      '<p>As partes manterão em sigilo as informações técnicas, financeiras e comerciais a que tiverem acesso em razão deste contrato, mesmo após sua rescisão, respondendo por perdas e danos a parte que descumprir a obrigação de confidencialidade, ressalvadas as informações de conhecimento público.</p>' +
-      '<p>A CONTRATADA atuará em conformidade com a legislação vigente de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD), tratando os dados pessoais a que tiver acesso apenas conforme as instruções da CONTRATANTE e exclusivamente para a prestação dos serviços, não os revelando a terceiros sem autorização prévia e por escrito, salvo determinação legal de autoridade pública, hipótese em que comunicará previamente a CONTRATANTE.</p>' +
+      sub('As partes manterão em sigilo as informações técnicas, financeiras e comerciais a que tiverem acesso em razão deste contrato, mesmo após sua rescisão, respondendo por perdas e danos a parte que descumprir a obrigação de confidencialidade, ressalvadas as informações de conhecimento público.') +
+      sub('A CONTRATADA atuará em conformidade com a legislação vigente de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD), tratando os dados pessoais a que tiver acesso apenas conforme as instruções da CONTRATANTE e exclusivamente para a prestação dos serviços, não os revelando a terceiros sem autorização prévia e por escrito, salvo determinação legal de autoridade pública, hipótese em que comunicará previamente a CONTRATANTE.') +
 
       clausula('Das Assinaturas Digitais') +
-      '<p>As partes reconhecem a plena validade e eficácia da assinatura deste documento por meios eletrônicos, via plataformas devidamente certificadas, nos termos da MP nº 2.200-2/2001 e do Decreto nº 10.278/2020, atestando a integridade do documento gerado.</p>' +
-      '<p><strong>Parágrafo único:</strong> Em caso de assinatura por plataforma digital, as partes dispensam expressamente a assinatura de testemunhas, nos termos do § 4º do art. 784 do CPC.</p>' +
+      sub('As partes reconhecem a plena validade e eficácia da assinatura deste documento por meios eletrônicos, via plataformas devidamente certificadas, nos termos da MP nº 2.200-2/2001 e do Decreto nº 10.278/2020, atestando a integridade do documento gerado.') +
+      sub('Em caso de assinatura por plataforma digital, as partes dispensam expressamente a assinatura de testemunhas, nos termos do § 4º do art. 784 do CPC.') +
 
       clausula('Das Condições Gerais') +
-      '<p>As partes empregarão seus melhores esforços para resolver amigavelmente quaisquer controvérsias decorrentes deste contrato, observada a boa-fé.</p>' +
-      '<p>Alterações somente terão validade se formalizadas por aditamento contratual; acordos verbais não obrigarão as partes.</p>' +
-      '<p>A CONTRATANTE não responderá solidária nem subsidiariamente por encargos trabalhistas, previdenciários ou sociais decorrentes da contratação de pessoal pela CONTRATADA.</p>' +
-      '<p>Ao assinar, a CONTRATANTE autoriza a CONTRATADA a iniciar as operações necessárias ao cumprimento do contrato.</p>' +
-      '<p>O presente contrato é firmado em caráter irrevogável e irretratável, obrigando as partes e seus sucessores, valendo como título executivo extrajudicial na forma do art. 784, III, do CPC (Lei nº 13.105/2015).</p>' +
-      '<p>As partes poderão ser intimadas, notificadas ou citadas via e-mail e/ou WhatsApp.</p>' +
+      sub('As partes empregarão seus melhores esforços para resolver amigavelmente quaisquer controvérsias decorrentes deste contrato, observada a boa-fé.') +
+      sub('Alterações somente terão validade se formalizadas por aditamento contratual; acordos verbais não obrigarão as partes.') +
+      sub('A CONTRATANTE não responderá solidária nem subsidiariamente por encargos trabalhistas, previdenciários ou sociais decorrentes da contratação de pessoal pela CONTRATADA.') +
+      sub('Ao assinar, a CONTRATANTE autoriza a CONTRATADA a iniciar as operações necessárias ao cumprimento do contrato.') +
+      sub('O presente contrato é firmado em caráter irrevogável e irretratável, obrigando as partes e seus sucessores, valendo como título executivo extrajudicial na forma do art. 784, III, do CPC (Lei nº 13.105/2015).') +
+      sub('As partes poderão ser intimadas, notificadas ou citadas via e-mail e/ou WhatsApp.') +
 
       clausula('Do Foro') +
-      '<p>Fica eleito o foro da comarca de Balneário Camboriú/SC para dirimir as questões oriundas deste contrato.</p>' +
+      sub('Fica eleito o foro da comarca de Balneário Camboriú/SC para dirimir as questões oriundas deste contrato.') +
 
       '<p style="margin-top:18px;">E, por estarem assim justas e contratadas, firmam o presente instrumento.</p>' +
-      '<p>Balneário Camboriú/SC, ' + new Date().toLocaleDateString('pt-BR') + '.</p>' +
+      '<p style="text-align:right;margin-top:16px;">Balneário Camboriú/SC, ' + new Date().toLocaleDateString('pt-BR') + '</p>' +
 
       '<div class="assinaturas">' +
         '<div class="linha-ass"><strong>' + campo(empresa.razao, 'Razão social da Ruah') + '</strong><br/>CNPJ: ' + campo(empresa.cnpj, 'CNPJ') + '<br/>CONTRATADA</div>' +
