@@ -728,13 +728,120 @@
   }
 
   @media (max-width: 1020px) {
-    .layout-proposta { grid-template-columns: 1fr; }
+    .layout-proposta, .layout-contrato { grid-template-columns: 1fr; }
+    .doc-contrato { padding: 26px 22px; }
     .metricas, .condicoes { grid-template-columns: repeat(2, 1fr); }
     main { padding: 18px 16px 130px; }
     .topo { padding: 16px 16px 0; }
     .doc-capa, .doc-corpo { padding-left: 26px; padding-right: 26px; }
     .doc-capa .logo-capa { right: 26px; top: 30px; height: 24px; }
     .doc-capa h1 { padding-right: 0; margin-top: 40px; }
+  }
+
+  /* ===================== CONTRATOS ===================== */
+  .layout-contrato {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+
+  .form-secao {
+    border: 1px solid var(--linha);
+    border-radius: 14px;
+    padding: 14px 16px 2px;
+    margin-bottom: 16px;
+  }
+
+  .form-secao > strong {
+    display: block;
+    color: var(--azul);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .form-secao .dica { font-size: 11.5px; color: var(--muted); margin: -6px 0 12px; }
+
+  .doc-contrato {
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--sombra);
+    padding: 46px 52px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--texto);
+  }
+
+  .doc-contrato h1 {
+    text-align: center;
+    font-size: 15px;
+    letter-spacing: .6px;
+    color: var(--azul);
+    margin: 0 0 6px;
+    text-transform: uppercase;
+  }
+
+  .doc-contrato .sub-codigo {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11.5px;
+    margin-bottom: 26px;
+  }
+
+  .doc-contrato .clausula {
+    font-weight: 800;
+    color: var(--azul);
+    margin: 20px 0 6px;
+    text-transform: uppercase;
+    font-size: 12.5px;
+  }
+
+  .doc-contrato p { margin: 8px 0; text-align: justify; }
+  .doc-contrato ul { margin: 6px 0 10px 20px; padding: 0; }
+  .doc-contrato li { margin: 4px 0; text-align: justify; }
+
+  .doc-contrato .assinaturas {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .doc-contrato .linha-ass {
+    border-top: 1.5px solid var(--texto);
+    padding-top: 8px;
+    margin-top: 64px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .doc-contrato .falta {
+    background: var(--vermelho-claro);
+    color: var(--vermelho);
+    padding: 0 5px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .aviso-pendencias {
+    background: #fff8eb;
+    border-left: 5px solid var(--dourado);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .badge-fechado {
+    background: var(--verde-claro);
+    color: var(--verde);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    margin-left: 6px;
   }
 
   /* link do mapa: texto amigável na tela, URL visível no PDF impresso */
@@ -755,6 +862,20 @@
     .doc-tabela tr, .metrica, .condicao, .caixa-destaque { break-inside: avoid; }
     .so-tela { display: none; }
     .so-print { display: inline; }
+
+    /* impressão do contrato: mostra só o documento do contrato */
+    body.print-contrato #vistaDoc { display: none !important; }
+    body.print-contrato #vistaContratos { display: block !important; }
+    body.print-contrato .layout-contrato { display: block; }
+    body.print-contrato .col-form-contrato,
+    body.print-contrato .aviso-pendencias,
+    body.print-contrato .hist-contratos { display: none !important; }
+    body.print-contrato .doc-contrato {
+      box-shadow: none;
+      border-radius: 0;
+      padding: 18mm 16mm;
+    }
+    .doc-contrato .clausula, .doc-contrato .assinaturas { break-inside: avoid; }
   }
 </style>
 </head>
@@ -775,6 +896,7 @@
     <button class="aba" data-vista="vistaProposta" type="button">📝 Montar proposta <span class="contador" id="contadorItens" style="display:none;">0</span></button>
     <button class="aba" data-vista="vistaDoc" type="button">📄 Visualizar</button>
     <button class="aba" data-vista="vistaHistorico" type="button">🗂️ Histórico</button>
+    <button class="aba" data-vista="vistaContratos" type="button">📑 Contratos</button>
   </nav>
 </header>
 
@@ -904,6 +1026,109 @@
   <!-- =============== HISTÓRICO =============== -->
   <section class="vista" id="vistaHistorico">
     <div class="hist-lista" id="listaHistorico"></div>
+  </section>
+
+  <!-- =============== CONTRATOS =============== -->
+  <section class="vista" id="vistaContratos">
+    <div class="doc-acoes">
+      <button class="btn btn-claro" id="btnContratoDaProposta" type="button">📝 Usar proposta atual</button>
+      <div class="espacador"></div>
+      <button class="btn btn-primario" id="btnImprimirContrato" type="button">🖨️ Salvar PDF / Imprimir</button>
+      <button class="btn btn-dourado" id="btnSalvarContrato" type="button">💾 Salvar contrato</button>
+    </div>
+    <div class="layout-contrato">
+      <div class="card col-form-contrato">
+        <h2>Dados do contrato</h2>
+
+        <div class="form-secao">
+          <strong>🏢 Contratada — Ruah</strong>
+          <div class="dica">Preencha uma vez; fica salvo para os próximos contratos.</div>
+          <label for="eRazao">Razão social</label>
+          <input id="eRazao" placeholder="Ex.: Ruah Painéis Ltda." />
+          <div class="row2">
+            <div>
+              <label for="eCnpj">CNPJ</label>
+              <input id="eCnpj" placeholder="00.000.000/0000-00" />
+            </div>
+            <div>
+              <label for="eRespCpf">CPF do responsável</label>
+              <input id="eRespCpf" placeholder="000.000.000-00" />
+            </div>
+          </div>
+          <label for="eRespNome">Nome do responsável (representante)</label>
+          <input id="eRespNome" placeholder="Ex.: Peeter Lee Grando" />
+          <label for="eEndereco">Endereço completo da sede</label>
+          <input id="eEndereco" placeholder="Rua, nº — Bairro, Balneário Camboriú/SC, CEP" />
+        </div>
+
+        <div class="form-secao">
+          <strong>👤 Contratante — Cliente</strong>
+          <label for="cRazao">Razão social / nome completo</label>
+          <input id="cRazao" placeholder="Ex.: Acme Ltda." />
+          <div class="row2">
+            <div>
+              <label for="cCnpjDoc">CNPJ / CPF</label>
+              <input id="cCnpjDoc" placeholder="00.000.000/0000-00" />
+            </div>
+            <div>
+              <label for="cRepresentante">Representante</label>
+              <input id="cRepresentante" placeholder="Quem assina" />
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <label for="cLogradouro">Logradouro</label>
+              <input id="cLogradouro" placeholder="Rua / Avenida" />
+            </div>
+            <div>
+              <label for="cNumero">Número</label>
+              <input id="cNumero" placeholder="Nº" />
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <label for="cBairro">Bairro</label>
+              <input id="cBairro" />
+            </div>
+            <div>
+              <label for="cCidade">Cidade</label>
+              <input id="cCidade" value="Balneário Camboriú" />
+            </div>
+          </div>
+          <div class="row2">
+            <div>
+              <label for="cUf">UF</label>
+              <input id="cUf" value="SC" maxlength="2" />
+            </div>
+            <div>
+              <label for="cEmail">E-mail (boleto e NF)</label>
+              <input id="cEmail" type="email" placeholder="financeiro@cliente.com.br" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-secao">
+          <strong>📅 Vigência</strong>
+          <div class="row2">
+            <div>
+              <label for="cInicio">Início</label>
+              <input id="cInicio" type="date" />
+            </div>
+            <div>
+              <label for="cFim">Término</label>
+              <input id="cFim" type="date" />
+            </div>
+          </div>
+          <div class="dica" id="dicaVigencia">O término é calculado pela duração da proposta, mas pode ser ajustado.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="aviso-pendencias" id="avisoPendencias" style="display:none;"></div>
+        <div class="doc-contrato" id="docContrato"></div>
+        <div class="hist-lista hist-contratos" id="listaContratos" style="margin-top:22px;"></div>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -1172,6 +1397,12 @@
     if (idVista === 'vistaDoc') renderDocumento();
     if (idVista === 'vistaHistorico') renderHistorico();
     if (idVista === 'vistaProposta') { renderItens(); }
+    if (idVista === 'vistaContratos') {
+      preencherFormularioContrato();
+      renderDocContrato();
+      renderListaContratos();
+    }
+    document.body.classList.toggle('print-contrato', idVista === 'vistaContratos');
     atualizarBarra();
     window.scrollTo({ top: 0 });
   }
@@ -1562,7 +1793,8 @@
       var quando = new Date(h.data).toLocaleDateString('pt-BR');
       div.innerHTML =
         '<div class="info">' +
-          '<div class="codigo">' + escaparHtml(h.codigo) + ' · ' + quando + '</div>' +
+          '<div class="codigo">' + escaparHtml(h.codigo) + ' · ' + quando +
+            (h.fechada ? '<span class="badge-fechado">✔ Fechada · ' + escaparHtml(h.contratoCodigo || '') + '</span>' : '') + '</div>' +
           '<div class="cliente">' + escaparHtml(h.cliente) + '</div>' +
           '<div class="detalhes">' + h.qtdPontos + ' painel(is) · ' + escaparHtml(h.periodo) + ' · ' + escaparHtml(h.vendedor || '') + '</div>' +
         '</div>' +
@@ -1570,6 +1802,7 @@
         '<div class="hist-acoes">' +
           '<button class="btn-mini" data-acao="abrir" type="button">Abrir</button>' +
           '<button class="btn-mini" data-acao="duplicar" type="button">Duplicar</button>' +
+          '<button class="btn-mini" data-acao="contrato" type="button">📑 Gerar contrato</button>' +
           '<button class="btn-mini perigo" data-acao="excluir" type="button">Excluir</button>' +
         '</div>';
 
@@ -1591,6 +1824,12 @@
         salvarRascunho();
         trocarVista('vistaProposta');
         toast('Proposta duplicada — ajuste e salve');
+      });
+
+      div.querySelector('[data-acao="contrato"]').addEventListener('click', function () {
+        montarContratoDeProposta(h.estado, h.codigo);
+        trocarVista('vistaContratos');
+        toast('📑 Contrato pré-preenchido com a ' + h.codigo);
       });
 
       div.querySelector('[data-acao="excluir"]').addEventListener('click', function () {
@@ -1674,6 +1913,340 @@
   }
 
   /* ============================================================
+     CONTRATOS
+  ============================================================ */
+  var CHAVE_EMPRESA = 'ruah_empresa_v1';
+  var CHAVE_CONTRATOS = 'ruah_contratos_v1';
+  var CHAVE_CONT_CONTRATO = 'ruah_contador_contrato_v1';
+
+  var empresa = (function () {
+    try {
+      var e = JSON.parse(armazem.getItem(CHAVE_EMPRESA) || 'null');
+      if (e && typeof e === 'object') return e;
+    } catch (err) {}
+    return { razao: '', cnpj: '', respNome: '', respCpf: '', endereco: '' };
+  })();
+
+  var contrato = contratoVazio();
+
+  function contratoVazio() {
+    return {
+      codigo: null,
+      propostaCodigo: '',
+      cliente: { razao: '', doc: '', representante: '', logradouro: '', numero: '', bairro: '', cidade: 'Balneário Camboriú', uf: 'SC', email: '' },
+      inicio: '', fim: '',
+      meses: 12, parcelas: 12, mensal: 0, total: 0,
+      vendedor: '', itens: []
+    };
+  }
+
+  function salvarEmpresa() {
+    armazem.setItem(CHAVE_EMPRESA, JSON.stringify(empresa));
+  }
+
+  function carregarContratos() {
+    try {
+      var l = JSON.parse(armazem.getItem(CHAVE_CONTRATOS) || '[]');
+      return Array.isArray(l) ? l : [];
+    } catch (e) { return []; }
+  }
+
+  function salvarContratosLista(lista) {
+    armazem.setItem(CHAVE_CONTRATOS, JSON.stringify(lista));
+  }
+
+  function proximoCodigoContrato(consumir) {
+    var ano = new Date().getFullYear();
+    var chave = CHAVE_CONT_CONTRATO + '_' + ano;
+    var n = parseInt(armazem.getItem(chave) || '0', 10) + 1;
+    if (consumir) armazem.setItem(chave, String(n));
+    return 'CONT-' + ano + '-' + String(n).padStart(3, '0');
+  }
+
+  function somarMeses(iso, meses) {
+    if (!iso) return '';
+    var p = iso.split('-').map(Number);
+    if (p.length !== 3) return '';
+    var d = new Date(p[0], p[1] - 1 + meses, p[2]);
+    d.setDate(d.getDate() - 1);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function totaisDeProposta(p) {
+    var subtotal = (p.itens || []).reduce(function (acc, i) { return acc + Number(i.valor || 0); }, 0);
+    var desc = ehPercentual(p.desconto) ? subtotal * (parseValor(p.desconto) / 100) : parseValor(p.desconto);
+    desc = Math.min(Math.max(desc, 0), subtotal);
+    var mensal = subtotal - desc;
+    var meses = parseInt(p.periodo, 10) || 1;
+    return { mensal: mensal, meses: meses, total: mensal * meses, parcelas: parseInt(p.parcelas, 10) || meses };
+  }
+
+  function montarContratoDeProposta(snapshot, codigoProposta) {
+    var t = totaisDeProposta(snapshot);
+    contrato = contratoVazio();
+    contrato.propostaCodigo = codigoProposta || snapshot.codigo || '';
+    contrato.cliente.razao = snapshot.cliente || '';
+    contrato.cliente.doc = snapshot.cnpj || '';
+    contrato.cliente.representante = snapshot.contato || '';
+    contrato.inicio = snapshot.inicio || '';
+    contrato.meses = t.meses;
+    contrato.parcelas = t.parcelas;
+    contrato.mensal = t.mensal;
+    contrato.total = t.total;
+    contrato.vendedor = snapshot.vendedor || '';
+    contrato.itens = JSON.parse(JSON.stringify(snapshot.itens || []));
+    if (contrato.inicio) contrato.fim = somarMeses(contrato.inicio, contrato.meses);
+  }
+
+  function preencherFormularioContrato() {
+    $('eRazao').value = empresa.razao || '';
+    $('eCnpj').value = empresa.cnpj || '';
+    $('eRespNome').value = empresa.respNome || '';
+    $('eRespCpf').value = empresa.respCpf || '';
+    $('eEndereco').value = empresa.endereco || '';
+    $('cRazao').value = contrato.cliente.razao || '';
+    $('cCnpjDoc').value = contrato.cliente.doc || '';
+    $('cRepresentante').value = contrato.cliente.representante || '';
+    $('cLogradouro').value = contrato.cliente.logradouro || '';
+    $('cNumero').value = contrato.cliente.numero || '';
+    $('cBairro').value = contrato.cliente.bairro || '';
+    $('cCidade').value = contrato.cliente.cidade || 'Balneário Camboriú';
+    $('cUf').value = contrato.cliente.uf || 'SC';
+    $('cEmail').value = contrato.cliente.email || '';
+    $('cInicio').value = contrato.inicio || '';
+    $('cFim').value = contrato.fim || '';
+  }
+
+  function lerFormularioContrato() {
+    empresa.razao = $('eRazao').value.trim();
+    empresa.cnpj = $('eCnpj').value.trim();
+    empresa.respNome = $('eRespNome').value.trim();
+    empresa.respCpf = $('eRespCpf').value.trim();
+    empresa.endereco = $('eEndereco').value.trim();
+    salvarEmpresa();
+    contrato.cliente.razao = $('cRazao').value.trim();
+    contrato.cliente.doc = $('cCnpjDoc').value.trim();
+    contrato.cliente.representante = $('cRepresentante').value.trim();
+    contrato.cliente.logradouro = $('cLogradouro').value.trim();
+    contrato.cliente.numero = $('cNumero').value.trim();
+    contrato.cliente.bairro = $('cBairro').value.trim();
+    contrato.cliente.cidade = $('cCidade').value.trim();
+    contrato.cliente.uf = $('cUf').value.trim().toUpperCase();
+    contrato.cliente.email = $('cEmail').value.trim();
+    contrato.inicio = $('cInicio').value;
+    contrato.fim = $('cFim').value;
+  }
+
+  function campo(valor, rotulo) {
+    return valor ? escaparHtml(valor) : '<span class="falta">[' + rotulo + ']</span>';
+  }
+
+  function pendenciasContrato() {
+    var faltas = [];
+    if (!empresa.razao) faltas.push('razão social da Ruah');
+    if (!empresa.cnpj) faltas.push('CNPJ da Ruah');
+    if (!empresa.endereco) faltas.push('endereço da Ruah');
+    if (!empresa.respNome) faltas.push('responsável da Ruah');
+    if (!empresa.respCpf) faltas.push('CPF do responsável');
+    if (!contrato.cliente.razao) faltas.push('razão social do cliente');
+    if (!contrato.cliente.doc) faltas.push('CNPJ/CPF do cliente');
+    if (!contrato.cliente.representante) faltas.push('representante do cliente');
+    if (!contrato.cliente.logradouro) faltas.push('endereço do cliente');
+    if (!contrato.cliente.email) faltas.push('e-mail do cliente');
+    if (!contrato.inicio) faltas.push('data de início');
+    if (!contrato.fim) faltas.push('data de término');
+    if (!contrato.itens.length) faltas.push('painéis (gere a partir de uma proposta)');
+    return faltas;
+  }
+
+  function renderDocContrato() {
+    var n = 0;
+    function clausula(titulo) { n++; return '<div class="clausula">Cláusula ' + n + 'ª — ' + titulo + '</div>'; }
+
+    var cli = contrato.cliente;
+    var enderecoCliente = (cli.logradouro || cli.numero)
+      ? (cli.logradouro + ', ' + (cli.numero || 's/nº') + ' — ' + (cli.bairro || '') + ', ' + (cli.cidade || '') + '/' + (cli.uf || ''))
+      : '';
+
+    var listaItens = contrato.itens.map(function (i) {
+      return '<li><strong>' + escaparHtml(i.nome) + '</strong> — ' + escaparHtml(i.endereco) + ', medindo ' + escaparHtml(i.tamanho) + '.</li>';
+    }).join('');
+
+    var codigo = contrato.codigo || proximoCodigoContrato(false);
+    var vinculo = contrato.propostaCodigo ? ' · Proposta ' + escaparHtml(contrato.propostaCodigo) : '';
+
+    $('docContrato').innerHTML =
+      '<h1>Contrato de Veiculação de Publicidade em Painel Eletrônico de LED</h1>' +
+      '<div class="sub-codigo">' + codigo + vinculo + '</div>' +
+
+      '<p>Por este instrumento particular, de um lado, <strong>' + campo(empresa.razao, 'Razão social da Ruah') + '</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ' + campo(empresa.cnpj, 'CNPJ da Ruah') + ', com sede em ' + campo(empresa.endereco, 'Endereço da Ruah') + ', neste ato representada por ' + campo(empresa.respNome, 'Responsável da Ruah') + ', inscrito no CPF sob nº ' + campo(empresa.respCpf, 'CPF do responsável') + ', doravante denominada simplesmente <strong>CONTRATADA</strong>; e <strong>' + campo(cli.razao, 'Razão social do cliente') + '</strong>, inscrita no CNPJ/CPF sob nº ' + campo(cli.doc, 'CNPJ/CPF do cliente') + ', com sede em ' + campo(enderecoCliente, 'Endereço do cliente') + ', neste ato representada por ' + campo(cli.representante, 'Representante do cliente') + ', doravante denominada simplesmente <strong>CONTRATANTE</strong>, têm entre si justo e acertado o presente contrato, que se regerá pelas disposições legais aplicáveis e pelas cláusulas abaixo:</p>' +
+
+      clausula('Do Objeto') +
+      '<p>O presente contrato tem por objeto a veiculação de publicidade em Painel(éis) Eletrônico(s) de LED instalado(s) pela CONTRATADA, conforme relação abaixo, com indicação de localização e dimensões:</p>' +
+      (contrato.itens.length ? '<ul>' + listaItens + '</ul>' : '<p><span class="falta">[Nenhum painel — gere o contrato a partir de uma proposta]</span></p>') +
+
+      clausula('Do Número e Tempo de Inserções') +
+      '<p>A CONTRATADA obriga-se a realizar, no mínimo, 250 (duzentas e cinquenta) inserções diárias em cada painel, com duração de 10 (dez) segundos cada, distribuídas igualmente ao longo do período de funcionamento, totalizando no mínimo 7.500 (sete mil e quinhentas) inserções por mês em cada painel, durante a vigência deste contrato.</p>' +
+      '<p><strong>Parágrafo único:</strong> Se o funcionamento dos painéis for interrompido, a CONTRATADA fica obrigada a repor as inserções devidas durante o tempo de paralisação.</p>' +
+
+      clausula('Do Prazo') +
+      '<p>O presente contrato terá duração de ' + contrato.meses + ' (' + numeroBR(contrato.meses) + ') ' + (contrato.meses === 1 ? 'mês' : 'meses') + ', com início em ' + campo(dataBR(contrato.inicio) !== '-' ? dataBR(contrato.inicio) : '', 'Data de início') + ' e término em ' + campo(dataBR(contrato.fim) !== '-' ? dataBR(contrato.fim) : '', 'Data de término') + ', podendo ser renovado por igual período mediante prévia e expressa manifestação das partes.</p>' +
+
+      clausula('Do Valor') +
+      '<p>A CONTRATANTE pagará à CONTRATADA o valor mensal de <strong>' + moeda(contrato.mensal) + '</strong>' + (contrato.total > 0 ? ' (total do contrato: ' + moeda(contrato.total) + ')' : '') + ', mediante boleto bancário enviado pela CONTRATADA, sendo o primeiro vencimento na data acordada entre as partes.</p>' +
+      '<p>O boleto e a nota fiscal referentes a este contrato serão enviados à CONTRATANTE para o seguinte endereço eletrônico: ' + campo(cli.email, 'E-mail do cliente') + '.</p>' +
+
+      clausula('Das Obrigações') +
+      '<p><strong>I. Caberá à CONTRATADA:</strong></p>' +
+      '<ul>' +
+        '<li>Pagar toda e qualquer despesa decorrente da instalação, manutenção e retirada da estrutura;</li>' +
+        '<li>Veicular a publicidade no local e no tempo previstos neste contrato;</li>' +
+        '<li>Satisfazer as exigências dos poderes públicos relativas à instalação, manutenção e retirada;</li>' +
+        '<li>Zelar pela visualização dos painéis e dos dizeres do anúncio;</li>' +
+        '<li>Arcar com os custos de inserção e do software necessário à perfeita transmissão da mensagem, zelando pela qualidade técnica da veiculação.</li>' +
+      '</ul>' +
+      '<p><strong>II. Caberá à CONTRATANTE:</strong></p>' +
+      '<ul>' +
+        '<li>Fornecer, no prazo de 5 (cinco) dias após o fechamento do contrato, o VT de publicidade a ser veiculado;</li>' +
+        '<li>Pagar pontualmente o valor mensal previsto enquanto perdurar o contrato;</li>' +
+        '<li>Satisfazer as exigências dos poderes públicos e do Código de Defesa do Consumidor quanto ao conteúdo dos anúncios;</li>' +
+        '<li>Não ceder, emprestar ou sublocar o espaço sem prévia e expressa autorização da CONTRATADA.</li>' +
+      '</ul>' +
+
+      clausula('Da Mora') +
+      '<p>O não pagamento na data fixada implicará multa de 2% (dois por cento) sobre o valor em atraso, correção monetária pelo IPCA/IBGE e juros moratórios de 1% (um por cento) ao mês. Persistindo o atraso por prazo superior a 30 (trinta) dias, a CONTRATADA poderá rescindir automaticamente o contrato, paralisando a veiculação da publicidade, sem prejuízo das demais medidas cabíveis.</p>' +
+
+      clausula('Da Rescisão') +
+      '<p>Constituirá motivo de rescisão, independentemente de notificação judicial ou extrajudicial:</p>' +
+      '<ul>' +
+        '<li>a) O pedido de falência, dissolução, liquidação ou recuperação judicial ou extrajudicial de qualquer das partes;</li>' +
+        '<li>b) A insolvência comprovada de qualquer das partes;</li>' +
+        '<li>c) A inobservância de qualquer cláusula contratual, em especial o inadimplemento injustificado da CONTRATANTE nos pagamentos ou da CONTRATADA na execução dos serviços.</li>' +
+      '</ul>' +
+      '<p>Qualquer tolerância quanto à cobrança de multa ou ao cumprimento de obrigação não implicará renúncia, novação ou alteração do contrato, configurando mera liberalidade.</p>' +
+
+      clausula('Do Sigilo e da Proteção de Dados') +
+      '<p>As partes manterão em sigilo as informações técnicas, financeiras e comerciais a que tiverem acesso em razão deste contrato, mesmo após sua rescisão, respondendo por perdas e danos a parte que descumprir a obrigação de confidencialidade, ressalvadas as informações de conhecimento público.</p>' +
+      '<p>A CONTRATADA atuará em conformidade com a legislação vigente de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD), tratando os dados pessoais a que tiver acesso apenas conforme as instruções da CONTRATANTE e exclusivamente para a prestação dos serviços, não os revelando a terceiros sem autorização prévia e por escrito, salvo determinação legal de autoridade pública, hipótese em que comunicará previamente a CONTRATANTE.</p>' +
+
+      clausula('Das Assinaturas Digitais') +
+      '<p>As partes reconhecem a plena validade e eficácia da assinatura deste documento por meios eletrônicos, via plataformas devidamente certificadas, nos termos da MP nº 2.200-2/2001 e do Decreto nº 10.278/2020, atestando a integridade do documento gerado.</p>' +
+      '<p><strong>Parágrafo único:</strong> Em caso de assinatura por plataforma digital, as partes dispensam expressamente a assinatura de testemunhas, nos termos do § 4º do art. 784 do CPC.</p>' +
+
+      clausula('Das Condições Gerais') +
+      '<p>As partes empregarão seus melhores esforços para resolver amigavelmente quaisquer controvérsias decorrentes deste contrato, observada a boa-fé.</p>' +
+      '<p>Alterações somente terão validade se formalizadas por aditamento contratual; acordos verbais não obrigarão as partes.</p>' +
+      '<p>A CONTRATANTE não responderá solidária nem subsidiariamente por encargos trabalhistas, previdenciários ou sociais decorrentes da contratação de pessoal pela CONTRATADA.</p>' +
+      '<p>Ao assinar, a CONTRATANTE autoriza a CONTRATADA a iniciar as operações necessárias ao cumprimento do contrato.</p>' +
+      '<p>O presente contrato é firmado em caráter irrevogável e irretratável, obrigando as partes e seus sucessores, valendo como título executivo extrajudicial na forma do art. 784, III, do CPC (Lei nº 13.105/2015).</p>' +
+      '<p>As partes poderão ser intimadas, notificadas ou citadas via e-mail e/ou WhatsApp.</p>' +
+
+      clausula('Do Foro') +
+      '<p>Fica eleito o foro da comarca de Balneário Camboriú/SC para dirimir as questões oriundas deste contrato.</p>' +
+
+      '<p style="margin-top:18px;">E, por estarem assim justas e contratadas, firmam o presente instrumento.</p>' +
+      '<p>Balneário Camboriú/SC, ' + new Date().toLocaleDateString('pt-BR') + '.</p>' +
+
+      '<div class="assinaturas">' +
+        '<div class="linha-ass"><strong>' + campo(empresa.razao, 'Razão social da Ruah') + '</strong><br/>CNPJ: ' + campo(empresa.cnpj, 'CNPJ') + '<br/>CONTRATADA</div>' +
+        '<div class="linha-ass"><strong>' + campo(cli.razao, 'Razão social do cliente') + '</strong><br/>CNPJ/CPF: ' + campo(cli.doc, 'CNPJ/CPF') + '<br/>CONTRATANTE</div>' +
+      '</div>';
+
+    var faltas = pendenciasContrato();
+    var aviso = $('avisoPendencias');
+    if (faltas.length) {
+      aviso.style.display = '';
+      aviso.innerHTML = '<strong>⚠️ Faltam ' + faltas.length + ' dado(s) para o contrato ficar completo:</strong> ' + faltas.join(' · ');
+    } else {
+      aviso.style.display = 'none';
+    }
+  }
+
+  function imprimirContrato() {
+    lerFormularioContrato();
+    renderDocContrato();
+    window.print();
+  }
+
+  function salvarContratoAtual() {
+    lerFormularioContrato();
+    if (!contrato.itens.length) { toast('Gere o contrato a partir de uma proposta primeiro.'); return; }
+    if (!contrato.cliente.razao) { toast('Informe a razão social do cliente.'); return; }
+
+    var lista = carregarContratos();
+    if (!contrato.codigo) contrato.codigo = proximoCodigoContrato(true);
+    var registro = {
+      codigo: contrato.codigo,
+      data: new Date().toISOString(),
+      contrato: JSON.parse(JSON.stringify(contrato))
+    };
+    var idx = lista.findIndex(function (c) { return c.codigo === contrato.codigo; });
+    if (idx >= 0) lista[idx] = registro; else lista.unshift(registro);
+    salvarContratosLista(lista);
+
+    // marca a proposta de origem como fechada
+    if (contrato.propostaCodigo) {
+      var hs = carregarHistorico();
+      var h = hs.find(function (x) { return x.codigo === contrato.propostaCodigo; });
+      if (h) { h.fechada = true; h.contratoCodigo = contrato.codigo; salvarHistoricoLista(hs); }
+    }
+
+    renderDocContrato();
+    renderListaContratos();
+    toast('💾 Contrato ' + contrato.codigo + ' salvo!' + (contrato.propostaCodigo ? ' Proposta marcada como fechada ✅' : ''));
+  }
+
+  function renderListaContratos() {
+    var box = $('listaContratos');
+    var lista = carregarContratos();
+    box.innerHTML = '';
+    if (!lista.length) return;
+
+    var titulo = document.createElement('h2');
+    titulo.style.cssText = 'color:var(--azul);font-size:16px;margin:6px 0 2px;';
+    titulo.textContent = 'Contratos salvos';
+    box.appendChild(titulo);
+
+    lista.forEach(function (r, idx) {
+      var c = r.contrato;
+      var div = document.createElement('div');
+      div.className = 'hist-item';
+      div.innerHTML =
+        '<div class="info">' +
+          '<div class="codigo">' + escaparHtml(r.codigo) + ' · ' + new Date(r.data).toLocaleDateString('pt-BR') +
+            (c.propostaCodigo ? ' · da ' + escaparHtml(c.propostaCodigo) : '') + '</div>' +
+          '<div class="cliente">' + escaparHtml(c.cliente.razao || '(sem nome)') + '</div>' +
+          '<div class="detalhes">' + c.itens.length + ' painel(is) · ' + dataBR(c.inicio) + ' a ' + dataBR(c.fim) + '</div>' +
+        '</div>' +
+        '<div class="total">' + moeda(c.mensal) + '/mês<small>contrato: ' + moeda(c.total) + '</small></div>' +
+        '<div class="hist-acoes">' +
+          '<button class="btn-mini" data-acao="abrir" type="button">Abrir</button>' +
+          '<button class="btn-mini perigo" data-acao="excluir" type="button">Excluir</button>' +
+        '</div>';
+
+      div.querySelector('[data-acao="abrir"]').addEventListener('click', function () {
+        contrato = JSON.parse(JSON.stringify(c));
+        contrato.codigo = r.codigo;
+        preencherFormularioContrato();
+        renderDocContrato();
+        window.scrollTo({ top: 0 });
+        toast('Contrato ' + r.codigo + ' aberto');
+      });
+
+      div.querySelector('[data-acao="excluir"]').addEventListener('click', function () {
+        if (!window.confirm('Excluir o contrato ' + r.codigo + '?')) return;
+        var l = carregarContratos();
+        l.splice(idx, 1);
+        salvarContratosLista(l);
+        renderListaContratos();
+        toast('Contrato excluído');
+      });
+
+      box.appendChild(div);
+    });
+  }
+
+  /* ============================================================
      EVENTOS
   ============================================================ */
   function registrarEventos() {
@@ -1743,6 +2316,36 @@
       $('fParcelas').value = $('fPeriodo').value;
       lerFormulario();
       renderTotais();
+    });
+
+    // contratos
+    $('btnContratoDaProposta').addEventListener('click', function () {
+      if (!estado.itens.length) { toast('A proposta atual não tem painéis.'); return; }
+      lerFormularioSeguro();
+      montarContratoDeProposta(estado, estado.codigo || '');
+      preencherFormularioContrato();
+      renderDocContrato();
+      toast('📑 Contrato pré-preenchido com a proposta atual');
+    });
+    $('btnImprimirContrato').addEventListener('click', imprimirContrato);
+    $('btnSalvarContrato').addEventListener('click', salvarContratoAtual);
+
+    ['eRazao','eCnpj','eRespNome','eRespCpf','eEndereco',
+     'cRazao','cCnpjDoc','cRepresentante','cLogradouro','cNumero','cBairro','cCidade','cUf','cEmail','cFim']
+      .forEach(function (id) {
+        $(id).addEventListener('input', function () {
+          lerFormularioContrato();
+          renderDocContrato();
+        });
+      });
+
+    $('cInicio').addEventListener('input', function () {
+      lerFormularioContrato();
+      if (contrato.inicio) {
+        contrato.fim = somarMeses(contrato.inicio, contrato.meses);
+        $('cFim').value = contrato.fim;
+      }
+      renderDocContrato();
     });
 
     // modal
