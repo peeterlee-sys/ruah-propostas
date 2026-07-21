@@ -77,6 +77,26 @@
     white-space: nowrap;
   }
 
+  .chip-sync {
+    background: rgba(255, 255, 255, .12);
+    border: 0;
+    color: #d9e2ec;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .chip-sync:hover { background: rgba(255, 255, 255, .22); }
+  .chip-sync.ok { color: #9be3c3; }
+  .chip-sync.erro { color: #ffb3ac; }
+
+  .dica-sync { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
+  .dica-sync ol { margin: 6px 0 0 18px; padding: 0; }
+  .dica-sync li { margin: 3px 0; }
+
   .abas {
     display: flex;
     gap: 4px;
@@ -1014,7 +1034,10 @@
         <small>Gerador de Propostas · Mídia OOH &amp; DOOH · Balneário Camboriú</small>
       </div>
     </div>
-    <div class="badge-slogan">Onde marcas ganham vida</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <button class="chip-sync" id="chipSync" type="button">🔄 Sincronizar</button>
+      <div class="badge-slogan">Onde marcas ganham vida</div>
+    </div>
   </div>
   <nav class="abas">
     <button class="aba ativa" data-vista="vistaCatalogo" type="button">📍 Catálogo</button>
@@ -1326,6 +1349,32 @@
   </div>
 </div>
 
+<!-- modal sincronização -->
+<div class="modal-fundo" id="modalSync">
+  <div class="modal">
+    <h3>🔄 Sincronização entre aparelhos</h3>
+    <div class="dica-sync">
+      O funil do CRM, propostas, contratos e catálogo ficam guardados no repositório privado
+      <strong>ruah-dados</strong> do GitHub de vocês. Configure cada aparelho uma única vez com a
+      <strong>chave da equipe</strong>:
+      <ol>
+        <li>Peça a chave para quem administra (ou crie em github.com &rarr; Settings &rarr; Developer settings &rarr; Fine-grained tokens, com acesso só ao repositório <em>ruah-dados</em>, permissão Contents: Read and write);</li>
+        <li>Cole a chave abaixo e salve — pronto, este aparelho passa a compartilhar tudo.</li>
+      </ol>
+    </div>
+    <label for="sToken">Chave da equipe</label>
+    <input id="sToken" placeholder="github_pat_..." autocomplete="off" />
+    <div class="dica-sync" id="sStatus"></div>
+    <div class="acoes">
+      <button class="btn btn-primario" id="sSalvar" type="button">Salvar e sincronizar</button>
+      <button class="btn btn-claro" id="sFechar" type="button">Fechar</button>
+    </div>
+    <div class="acoes" id="sLinhaDesligar" style="display:none;">
+      <button class="btn" id="sDesligar" type="button" style="background:var(--vermelho-claro);color:var(--vermelho);">Desativar a sincronização neste aparelho</button>
+    </div>
+  </div>
+</div>
+
 <!-- modal oportunidade / card do CRM -->
 <div class="modal-fundo" id="modalCard">
   <div class="modal">
@@ -1501,6 +1550,8 @@
 
   function salvarCatalogo() {
     armazem.setItem(CHAVE_CATALOGO, JSON.stringify(catalogo));
+    armazem.setItem('ruah_catalogo_em_v1', new Date().toISOString());
+    agendarSync();
   }
 
   function salvarRascunho() {
@@ -1528,14 +1579,21 @@
 
   function salvarHistoricoLista(lista) {
     armazem.setItem(CHAVE_HISTORICO, JSON.stringify(lista));
+    agendarSync();
   }
 
   function proximoCodigo(consumir) {
+    // deriva o próximo número das propostas existentes (funciona com sincronização)
     var ano = new Date().getFullYear();
-    var chave = CHAVE_CONTADOR + '_' + ano;
-    var n = parseInt(armazem.getItem(chave) || '0', 10) + 1;
-    if (consumir) armazem.setItem(chave, String(n));
-    return 'PROP-' + ano + '-' + String(n).padStart(3, '0');
+    var prefixo = 'PROP-' + ano + '-';
+    var maior = 0;
+    carregarHistorico().forEach(function (h) {
+      if (h.codigo && h.codigo.indexOf(prefixo) === 0) {
+        var n = parseInt(h.codigo.slice(prefixo.length), 10);
+        if (n > maior) maior = n;
+      }
+    });
+    return prefixo + String(maior + 1).padStart(3, '0');
   }
 
   /* ============================================================
@@ -2021,6 +2079,7 @@
         if (!window.confirm('Excluir a proposta ' + h.codigo + ' (' + h.cliente + ')?')) return;
         lista.splice(idx, 1);
         salvarHistoricoLista(lista);
+        registrarExclusao('historico', h.codigo);
         renderHistorico();
         toast('Proposta excluída');
       });
@@ -2127,6 +2186,8 @@
 
   function salvarEmpresa() {
     armazem.setItem(CHAVE_EMPRESA, JSON.stringify(empresa));
+    armazem.setItem('ruah_empresa_em_v1', new Date().toISOString());
+    agendarSync();
   }
 
   function carregarContratos() {
@@ -2138,14 +2199,21 @@
 
   function salvarContratosLista(lista) {
     armazem.setItem(CHAVE_CONTRATOS, JSON.stringify(lista));
+    agendarSync();
   }
 
   function proximoCodigoContrato(consumir) {
+    // deriva o próximo número dos contratos existentes (funciona com sincronização)
     var ano = new Date().getFullYear();
-    var chave = CHAVE_CONT_CONTRATO + '_' + ano;
-    var n = parseInt(armazem.getItem(chave) || '0', 10) + 1;
-    if (consumir) armazem.setItem(chave, String(n));
-    return 'CONT-' + ano + '-' + String(n).padStart(3, '0');
+    var prefixo = 'CONT-' + ano + '-';
+    var maior = 0;
+    carregarContratos().forEach(function (r) {
+      if (r.codigo && r.codigo.indexOf(prefixo) === 0) {
+        var n = parseInt(r.codigo.slice(prefixo.length), 10);
+        if (n > maior) maior = n;
+      }
+    });
+    return prefixo + String(maior + 1).padStart(3, '0');
   }
 
   function extensoInteiro(n) {
@@ -2494,6 +2562,7 @@
         var l = carregarContratos();
         l.splice(idx, 1);
         salvarContratosLista(l);
+        registrarExclusao('contrato', r.codigo);
         renderListaContratos();
         toast('Contrato excluído');
       });
@@ -2525,6 +2594,7 @@
 
   function salvarCrm(lista) {
     armazem.setItem(CHAVE_CRM, JSON.stringify(lista));
+    agendarSync();
   }
 
   function novoCardCrm() {
@@ -2801,11 +2871,255 @@
     var lista = carregarCrm();
     var card = lista.find(function (c) { return c.id === cardEmEdicao; });
     if (!window.confirm('Excluir o card "' + (card ? card.cliente : '') + '" do funil?')) return;
-    salvarCrm(lista.filter(function (c) { return c.id !== cardEmEdicao; }));
+    var idExcluido = cardEmEdicao;
+    salvarCrm(lista.filter(function (c) { return c.id !== idExcluido; }));
+    registrarExclusao('crm', idExcluido);
     fecharModalCard();
     renderCrm();
     toast('Card excluído');
   }
+
+  /* ============================================================
+     SINCRONIZAÇÃO ENTRE APARELHOS (repositório privado no GitHub)
+  ============================================================ */
+  var SYNC_REPO = 'peeterlee-sys/ruah-dados';
+  var CHAVE_SYNC = 'ruah_sync_v1';
+  var CHAVE_CAT_EM = 'ruah_catalogo_em_v1';
+  var CHAVE_EMP_EM = 'ruah_empresa_em_v1';
+  var CHAVE_LIXEIRA = 'ruah_lixeira_v1';
+  var syncRodando = false;
+  var syncAplicando = false;
+  var syncTimer = null;
+  var syncUltimaVez = 0;
+
+  function configSync() {
+    try {
+      var c = JSON.parse(armazem.getItem(CHAVE_SYNC) || 'null');
+      return (c && typeof c === 'object') ? c : {};
+    } catch (e) { return {}; }
+  }
+
+  function salvarConfigSync(c) { armazem.setItem(CHAVE_SYNC, JSON.stringify(c)); }
+
+  function carregarLixeira() {
+    try {
+      var l = JSON.parse(armazem.getItem(CHAVE_LIXEIRA) || '[]');
+      return Array.isArray(l) ? l : [];
+    } catch (e) { return []; }
+  }
+
+  function registrarExclusao(tipo, chave) {
+    var l = carregarLixeira();
+    if (!l.some(function (x) { return x.t === tipo && x.k === chave; })) {
+      l.push({ t: tipo, k: chave, em: new Date().toISOString() });
+      if (l.length > 800) l = l.slice(l.length - 800);
+      armazem.setItem(CHAVE_LIXEIRA, JSON.stringify(l));
+    }
+    agendarSync();
+  }
+
+  function setChip(estadoSync) {
+    var chip = $('chipSync');
+    if (!chip) return;
+    chip.classList.remove('ok', 'erro');
+    var cfg = configSync();
+    if (!cfg.token) { chip.textContent = '🔄 Sincronizar'; return; }
+    if (estadoSync === 'rodando') { chip.textContent = '🔄 Sincronizando…'; return; }
+    if (estadoSync === 'erro') { chip.classList.add('erro'); chip.textContent = '🔴 Erro de sync'; return; }
+    chip.classList.add('ok');
+    var hora = cfg.ultimoSync ? new Date(cfg.ultimoSync).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    chip.textContent = '🟢 Sincronizado' + (hora ? ' ' + hora : '');
+  }
+
+  function utf8b64(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function b64utf8(s) { return decodeURIComponent(escape(atob(s.replace(/\n/g, '')))); }
+
+  function ghFetch(cfg, metodo, corpo) {
+    return fetch('https://api.github.com/repos/' + SYNC_REPO + '/contents/dados.json', {
+      method: metodo || 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + cfg.token,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      body: corpo ? JSON.stringify(corpo) : undefined
+    });
+  }
+
+  function puxarRemoto(cfg) {
+    return ghFetch(cfg, 'GET').then(function (resp) {
+      if (resp.status === 404) return { pacote: null, sha: null };
+      if (!resp.ok) throw new Error('GET ' + resp.status);
+      return resp.json().then(function (j) {
+        var pacote = null;
+        try { pacote = JSON.parse(b64utf8(j.content)); } catch (e) {}
+        return { pacote: pacote, sha: j.sha };
+      });
+    });
+  }
+
+  function empurrarRemoto(cfg, pacote, sha) {
+    var corpo = {
+      message: 'sync ' + new Date().toISOString(),
+      content: utf8b64(JSON.stringify(pacote))
+    };
+    if (sha) corpo.sha = sha;
+    return ghFetch(cfg, 'PUT', corpo).then(function (resp) {
+      if (resp.status === 409 || resp.status === 422) { var e = new Error('conflito'); e.conflito = true; throw e; }
+      if (!resp.ok) throw new Error('PUT ' + resp.status);
+    });
+  }
+
+  function pacoteLocal() {
+    return {
+      atualizadoEm: new Date().toISOString(),
+      historico: carregarHistorico(),
+      contratos: carregarContratos(),
+      crm: carregarCrm(),
+      catalogo: { dados: catalogo, em: armazem.getItem(CHAVE_CAT_EM) || '' },
+      empresa: { dados: empresa, em: armazem.getItem(CHAVE_EMP_EM) || '' },
+      lixeira: carregarLixeira()
+    };
+  }
+
+  function fundirPorChave(a, b, chave, campoTs) {
+    var mapa = {};
+    function poe(item) {
+      if (!item || !item[chave]) return;
+      var k = item[chave];
+      var atual = mapa[k];
+      if (!atual) { mapa[k] = item; return; }
+      var t1 = Date.parse(atual[campoTs] || 0) || 0;
+      var t2 = Date.parse(item[campoTs] || 0) || 0;
+      if (t2 >= t1) mapa[k] = item;
+    }
+    (a || []).forEach(poe);
+    (b || []).forEach(poe);
+    return Object.keys(mapa).map(function (k) { return mapa[k]; }).sort(function (x, y) {
+      return (Date.parse(y[campoTs] || 0) || 0) - (Date.parse(x[campoTs] || 0) || 0);
+    });
+  }
+
+  function fundirPacotes(local, remoto) {
+    var lix = {};
+    (local.lixeira || []).concat(remoto.lixeira || []).forEach(function (x) {
+      if (x && x.t && x.k) lix[x.t + '|' + x.k] = x;
+    });
+    var lixLista = Object.keys(lix).map(function (k) { return lix[k]; });
+    function naoExcluido(tipo, campoChave) {
+      return function (item) { return !lix[tipo + '|' + item[campoChave]]; };
+    }
+
+    var catalogoF = (Date.parse(remoto.catalogo && remoto.catalogo.em || 0) || 0) > (Date.parse(local.catalogo && local.catalogo.em || 0) || 0)
+      ? remoto.catalogo : local.catalogo;
+    if (!catalogoF || !Array.isArray(catalogoF.dados) || !catalogoF.dados.length) catalogoF = local.catalogo;
+
+    var empresaF = (Date.parse(remoto.empresa && remoto.empresa.em || 0) || 0) > (Date.parse(local.empresa && local.empresa.em || 0) || 0)
+      ? remoto.empresa : local.empresa;
+    if (!empresaF || !empresaF.dados) empresaF = local.empresa;
+
+    return {
+      atualizadoEm: new Date().toISOString(),
+      historico: fundirPorChave(local.historico, remoto.historico, 'codigo', 'data').filter(naoExcluido('historico', 'codigo')),
+      contratos: fundirPorChave(local.contratos, remoto.contratos, 'codigo', 'data').filter(naoExcluido('contrato', 'codigo')),
+      crm: fundirPorChave(local.crm, remoto.crm, 'id', 'atualizadoEm').filter(naoExcluido('crm', 'id')),
+      catalogo: catalogoF,
+      empresa: empresaF,
+      lixeira: lixLista
+    };
+  }
+
+  function aplicarPacote(p) {
+    syncAplicando = true;
+    try {
+      armazem.setItem(CHAVE_HISTORICO, JSON.stringify(p.historico || []));
+      armazem.setItem(CHAVE_CONTRATOS, JSON.stringify(p.contratos || []));
+      armazem.setItem(CHAVE_CRM, JSON.stringify(p.crm || []));
+      if (p.catalogo && Array.isArray(p.catalogo.dados) && p.catalogo.dados.length) {
+        catalogo = p.catalogo.dados;
+        armazem.setItem(CHAVE_CATALOGO, JSON.stringify(catalogo));
+        armazem.setItem(CHAVE_CAT_EM, p.catalogo.em || '');
+      }
+      if (p.empresa && p.empresa.dados) {
+        empresa = p.empresa.dados;
+        armazem.setItem(CHAVE_EMPRESA, JSON.stringify(empresa));
+        armazem.setItem(CHAVE_EMP_EM, p.empresa.em || '');
+      }
+      armazem.setItem(CHAVE_LIXEIRA, JSON.stringify(p.lixeira || []));
+
+      // re-renderiza vistas de listagem (não mexe em formulários abertos)
+      var ativa = document.querySelector('.vista.ativa');
+      if (ativa) {
+        if (ativa.id === 'vistaCatalogo') renderCatalogo();
+        if (ativa.id === 'vistaHistorico') renderHistorico();
+        if (ativa.id === 'vistaCrm') renderCrm();
+      }
+      atualizarBarra();
+    } finally {
+      syncAplicando = false;
+    }
+  }
+
+  function corpoComparavel(p) {
+    var c = JSON.parse(JSON.stringify(p || {}));
+    c.atualizadoEm = '';
+    return JSON.stringify(c);
+  }
+
+  function sincronizar(motivo) {
+    var cfg = configSync();
+    if (!cfg.token || syncRodando) return Promise.resolve();
+    if (motivo === 'foco' && Date.now() - syncUltimaVez < 20000) return Promise.resolve();
+    syncRodando = true;
+    setChip('rodando');
+
+    var tentativa = 0;
+    function rodar() {
+      tentativa++;
+      return puxarRemoto(cfg).then(function (remoto) {
+        var local = pacoteLocal();
+        var fundido = remoto.pacote ? fundirPacotes(local, remoto.pacote) : local;
+        aplicarPacote(fundido);
+        if (!remoto.pacote || corpoComparavel(fundido) !== corpoComparavel(remoto.pacote)) {
+          return empurrarRemoto(cfg, fundido, remoto.sha);
+        }
+      });
+    }
+
+    return rodar().catch(function (e) {
+      if (e && e.conflito && tentativa < 3) return rodar();
+      throw e;
+    }).then(function () {
+      cfg = configSync();
+      cfg.ultimoSync = new Date().toISOString();
+      salvarConfigSync(cfg);
+      syncUltimaVez = Date.now();
+      setChip('ok');
+    }).catch(function (e) {
+      console.error('sync:', e);
+      setChip('erro');
+    }).then(function () {
+      syncRodando = false;
+    });
+  }
+
+  function agendarSync() {
+    if (syncAplicando || !configSync().token) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(function () { sincronizar('auto'); }, 2500);
+  }
+
+  function abrirModalSync() {
+    var cfg = configSync();
+    $('sToken').value = cfg.token || '';
+    $('sLinhaDesligar').style.display = cfg.token ? '' : 'none';
+    $('sStatus').textContent = cfg.token
+      ? (cfg.ultimoSync ? 'Última sincronização: ' + new Date(cfg.ultimoSync).toLocaleString('pt-BR') : 'Configurado, aguardando primeira sincronização.')
+      : 'Ainda não configurado neste aparelho.';
+    $('modalSync').classList.add('aberto');
+  }
+
+  function fecharModalSync() { $('modalSync').classList.remove('aberto'); }
 
   /* ============================================================
      EVENTOS
@@ -2927,8 +3241,44 @@
       if (ev.target === this) fecharModalCard();
     });
 
+    // sincronização
+    $('chipSync').addEventListener('click', abrirModalSync);
+    $('sFechar').addEventListener('click', fecharModalSync);
+    $('sSalvar').addEventListener('click', function () {
+      var token = $('sToken').value.trim();
+      if (!token) { toast('Cole a chave da equipe.'); return; }
+      salvarConfigSync({ token: token });
+      $('sStatus').textContent = 'Sincronizando…';
+      sincronizar('config').then(function () {
+        var cfg = configSync();
+        if (cfg.ultimoSync) {
+          $('sStatus').textContent = '✅ Sincronizado com sucesso!';
+          toast('🟢 Sincronização ativada neste aparelho');
+          setTimeout(fecharModalSync, 900);
+        } else {
+          $('sStatus').textContent = '❌ Não foi possível sincronizar. Confira a chave e tente de novo.';
+        }
+        $('sLinhaDesligar').style.display = configSync().token ? '' : 'none';
+      });
+    });
+    $('sDesligar').addEventListener('click', function () {
+      if (!window.confirm('Desativar a sincronização neste aparelho? (os dados locais são mantidos)')) return;
+      armazem.removeItem(CHAVE_SYNC);
+      setChip();
+      fecharModalSync();
+      toast('Sincronização desativada');
+    });
+    $('modalSync').addEventListener('click', function (ev) {
+      if (ev.target === this) fecharModalSync();
+    });
+
+    window.addEventListener('focus', function () { sincronizar('foco'); });
+    setInterval(function () {
+      if (document.visibilityState === 'visible') sincronizar('intervalo');
+    }, 90000);
+
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape') { fecharModal(); fecharModalCard(); }
+      if (ev.key === 'Escape') { fecharModal(); fecharModalCard(); fecharModalSync(); }
     });
   }
 
@@ -2948,6 +3298,8 @@
     renderCatalogo();
     renderItens();
     atualizarBarra();
+    setChip();
+    if (configSync().token) sincronizar('inicio');
   }
 
   if (document.readyState === 'loading') {
