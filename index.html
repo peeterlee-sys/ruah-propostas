@@ -738,6 +738,106 @@
     .doc-capa h1 { padding-right: 0; margin-top: 40px; }
   }
 
+  /* ===================== CRM / FUNIL ===================== */
+  .crm-metricas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .kanban {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    align-items: flex-start;
+    padding-bottom: 24px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .kanban-col {
+    background: #e9edf3;
+    border-radius: 16px;
+    min-width: 264px;
+    width: 264px;
+    flex-shrink: 0;
+    padding: 12px;
+  }
+
+  .kanban-col h3 {
+    margin: 2px 4px 2px;
+    font-size: 13.5px;
+    color: var(--azul);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .kanban-col h3 .qtd {
+    background: white;
+    border-radius: 999px;
+    padding: 1px 9px;
+    font-size: 11.5px;
+  }
+
+  .kanban-col .col-soma {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin: 0 4px 10px;
+    font-weight: 600;
+  }
+
+  .kanban-cards { display: flex; flex-direction: column; gap: 10px; min-height: 20px; }
+
+  .card-crm {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 12px 8px;
+    box-shadow: 0 3px 10px rgba(20, 36, 62, .08);
+  }
+
+  .card-crm .nome { font-weight: 700; color: var(--azul); font-size: 13.5px; line-height: 1.3; }
+  .card-crm .valor { font-size: 15px; font-weight: 800; color: var(--azul); margin: 4px 0 2px; }
+  .card-crm .valor small { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .card-crm .meta { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .card-crm .notas { font-size: 11.5px; color: var(--texto); background: #f8fafc; border-radius: 8px; padding: 6px 8px; margin-top: 6px; line-height: 1.45; }
+
+  .card-crm .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+
+  .tag {
+    background: #f0f4f9;
+    color: var(--azul);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .tag.ouro { background: #fff3d6; color: #8a6d1d; }
+  .tag.verde { background: var(--verde-claro); color: var(--verde); }
+
+  .card-crm .acoes-card {
+    display: flex;
+    gap: 4px;
+    margin-top: 9px;
+    border-top: 1px solid var(--linha);
+    padding-top: 7px;
+  }
+
+  .btn-icone {
+    background: #f0f4f9;
+    border: 0;
+    border-radius: 8px;
+    padding: 5px 9px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--azul);
+    font-weight: 700;
+  }
+
+  .btn-icone:hover { background: #dde5ef; }
+  .btn-icone.avancar { margin-left: auto; }
+
   /* ===================== CONTRATOS ===================== */
   .layout-contrato {
     display: grid;
@@ -922,6 +1022,7 @@
     <button class="aba" data-vista="vistaDoc" type="button">📄 Visualizar</button>
     <button class="aba" data-vista="vistaHistorico" type="button">🗂️ Histórico</button>
     <button class="aba" data-vista="vistaContratos" type="button">📑 Contratos</button>
+    <button class="aba" data-vista="vistaCrm" type="button">🎯 CRM</button>
   </nav>
 </header>
 
@@ -1155,6 +1256,16 @@
       </div>
     </div>
   </section>
+
+  <!-- =============== CRM / FUNIL =============== -->
+  <section class="vista" id="vistaCrm">
+    <div class="doc-acoes">
+      <button class="btn btn-dourado" id="btnNovaOportunidade" type="button">+ Nova oportunidade</button>
+      <div class="espacador"></div>
+    </div>
+    <div class="crm-metricas" id="crmMetricas"></div>
+    <div class="kanban" id="kanban"></div>
+  </section>
 </main>
 
 <div class="barra-carrinho" id="barraCarrinho">
@@ -1211,6 +1322,49 @@
     </div>
     <div class="acoes" id="mLinhaExcluir" style="display:none;">
       <button class="btn" id="mExcluir" type="button" style="background:var(--vermelho-claro);color:var(--vermelho);">Excluir ponto do catálogo</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal oportunidade / card do CRM -->
+<div class="modal-fundo" id="modalCard">
+  <div class="modal">
+    <h3 id="modalCardTitulo">Nova oportunidade</h3>
+    <label for="kCliente">Cliente / empresa</label>
+    <input id="kCliente" placeholder="Ex.: Restaurante Mar Azul" />
+    <div class="row2">
+      <div>
+        <label for="kContato">Contato</label>
+        <input id="kContato" placeholder="Nome de quem decide" />
+      </div>
+      <div>
+        <label for="kTelefone">WhatsApp</label>
+        <input id="kTelefone" placeholder="47 99999-0000" inputmode="tel" />
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label for="kValor">Valor estimado/mês (R$)</label>
+        <input id="kValor" inputmode="numeric" placeholder="Ex.: 3500" />
+      </div>
+      <div>
+        <label for="kVendedor">Vendedor(a)</label>
+        <select id="kVendedor">
+          <option>Peeter</option>
+          <option>Camila</option>
+        </select>
+      </div>
+    </div>
+    <label for="kEtapa">Etapa</label>
+    <select id="kEtapa"></select>
+    <label for="kNotas">Anotações</label>
+    <textarea id="kNotas" rows="3" placeholder="Ex.: indicação do João; ligar semana que vem..."></textarea>
+    <div class="acoes">
+      <button class="btn btn-primario" id="kSalvar" type="button">Salvar</button>
+      <button class="btn btn-claro" id="kCancelar" type="button">Cancelar</button>
+    </div>
+    <div class="acoes" id="kLinhaExcluir" style="display:none;">
+      <button class="btn" id="kExcluir" type="button" style="background:var(--vermelho-claro);color:var(--vermelho);">Excluir card</button>
     </div>
   </div>
 </div>
@@ -1275,7 +1429,7 @@
     vendedor: 'Peeter',
     periodo: '12', parcelas: '12', pagamento: 'Boleto',
     validade: '', inicio: '', desconto: '0',
-    obs: ''
+    obs: '', crmId: ''
   };
 
   /* ============================================================
@@ -1428,6 +1582,7 @@
       renderDocContrato();
       renderListaContratos();
     }
+    if (idVista === 'vistaCrm') renderCrm();
     document.body.classList.toggle('print-contrato', idVista === 'vistaContratos');
     atualizarBarra();
     window.scrollTo({ top: 0 });
@@ -1799,8 +1954,12 @@
 
     if (idx >= 0) lista[idx] = registro; else lista.unshift(registro);
     salvarHistoricoLista(lista);
+
+    // alimenta o funil do CRM automaticamente
+    estado.crmId = atualizarCrmComProposta(registro, estado.crmId);
+
     salvarRascunho();
-    toast('💾 Proposta ' + codigo + ' salva no histórico!');
+    toast('💾 Proposta ' + codigo + ' salva no histórico e no funil do CRM!');
   }
 
   function renderHistorico() {
@@ -2285,6 +2444,9 @@
       if (h) { h.fechada = true; h.contratoCodigo = contrato.codigo; salvarHistoricoLista(hs); }
     }
 
+    // move o card do CRM para "Fechado" automaticamente
+    marcarFechadoCrm(contrato.propostaCodigo, contrato.codigo, contrato);
+
     renderDocContrato();
     renderListaContratos();
     toast('💾 Contrato ' + contrato.codigo + ' salvo!' + (contrato.propostaCodigo ? ' Proposta marcada como fechada ✅' : ''));
@@ -2341,6 +2503,311 @@
   }
 
   /* ============================================================
+     CRM / FUNIL DE VENDAS
+  ============================================================ */
+  var CHAVE_CRM = 'ruah_crm_v1';
+  var ETAPAS = [
+    { id: 'oportunidade', nome: '🆕 Oportunidades' },
+    { id: 'enviada', nome: '📤 Proposta enviada' },
+    { id: 'negociacao', nome: '🤝 Negociação' },
+    { id: 'fechado', nome: '✅ Fechado' },
+    { id: 'perdido', nome: '❌ Perdido' }
+  ];
+
+  var cardEmEdicao = null;
+
+  function carregarCrm() {
+    try {
+      var l = JSON.parse(armazem.getItem(CHAVE_CRM) || '[]');
+      return Array.isArray(l) ? l : [];
+    } catch (e) { return []; }
+  }
+
+  function salvarCrm(lista) {
+    armazem.setItem(CHAVE_CRM, JSON.stringify(lista));
+  }
+
+  function novoCardCrm() {
+    var agora = new Date().toISOString();
+    return {
+      id: 'c' + Date.now() + Math.floor(Math.random() * 10000),
+      cliente: '', contato: '', telefone: '',
+      valorMensal: 0, vendedor: 'Peeter', notas: '',
+      etapa: 'oportunidade',
+      propostaCodigo: '', contratoCodigo: '',
+      criadoEm: agora, movidoEm: agora, atualizadoEm: agora
+    };
+  }
+
+  function moverCardEtapa(card, novaEtapa) {
+    if (card.etapa === novaEtapa) return;
+    card.etapa = novaEtapa;
+    card.movidoEm = new Date().toISOString();
+    card.atualizadoEm = card.movidoEm;
+  }
+
+  /* alimentação automática: proposta salva -> card no funil */
+  function atualizarCrmComProposta(registro, crmIdOrigem) {
+    var lista = carregarCrm();
+    var card = null;
+    if (crmIdOrigem) card = lista.find(function (c) { return c.id === crmIdOrigem; });
+    if (!card) card = lista.find(function (c) { return c.propostaCodigo === registro.codigo; });
+    if (!card) {
+      card = novoCardCrm();
+      card.etapa = 'enviada';
+      lista.unshift(card);
+    }
+    card.propostaCodigo = registro.codigo;
+    card.cliente = registro.cliente;
+    card.vendedor = registro.vendedor || card.vendedor;
+    card.valorMensal = registro.mensal;
+    if (registro.estado) {
+      card.contato = registro.estado.contato || card.contato;
+      card.telefone = registro.estado.telefone || card.telefone;
+    }
+    if (card.etapa === 'oportunidade') moverCardEtapa(card, 'enviada');
+    card.atualizadoEm = new Date().toISOString();
+    salvarCrm(lista);
+    return card.id;
+  }
+
+  /* alimentação automática: contrato salvo -> card fechado */
+  function marcarFechadoCrm(propostaCodigo, contratoCodigo, dadosContrato) {
+    var lista = carregarCrm();
+    var card = propostaCodigo
+      ? lista.find(function (c) { return c.propostaCodigo === propostaCodigo; })
+      : null;
+    if (!card) {
+      card = novoCardCrm();
+      card.cliente = dadosContrato.cliente.razao;
+      card.valorMensal = dadosContrato.mensal;
+      card.propostaCodigo = propostaCodigo || '';
+      lista.unshift(card);
+    }
+    card.contratoCodigo = contratoCodigo;
+    moverCardEtapa(card, 'fechado');
+    salvarCrm(lista);
+  }
+
+  /* preenche o funil com propostas antigas que ainda não têm card */
+  function sincronizarCrmComHistorico() {
+    var lista = carregarCrm();
+    var mudou = false;
+    carregarHistorico().forEach(function (h) {
+      if (lista.some(function (c) { return c.propostaCodigo === h.codigo; })) return;
+      var card = novoCardCrm();
+      card.propostaCodigo = h.codigo;
+      card.cliente = h.cliente;
+      card.vendedor = h.vendedor || 'Peeter';
+      card.valorMensal = h.mensal;
+      card.etapa = h.fechada ? 'fechado' : 'enviada';
+      card.contratoCodigo = h.contratoCodigo || '';
+      if (h.estado) {
+        card.contato = h.estado.contato || '';
+        card.telefone = h.estado.telefone || '';
+      }
+      card.criadoEm = card.movidoEm = card.atualizadoEm = h.data || card.criadoEm;
+      lista.push(card);
+      mudou = true;
+    });
+    if (mudou) salvarCrm(lista);
+  }
+
+  function diasAtras(iso) {
+    if (!iso) return '';
+    var dias = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+    if (dias <= 0) return 'hoje';
+    if (dias === 1) return 'há 1 dia';
+    return 'há ' + dias + ' dias';
+  }
+
+  function renderCrm() {
+    sincronizarCrmComHistorico();
+    var lista = carregarCrm();
+
+    // métricas do topo
+    var ativo = 0, fechados = 0, fechadosQtd = 0, perdidosQtd = 0;
+    lista.forEach(function (c) {
+      var v = Number(c.valorMensal || 0);
+      if (c.etapa === 'fechado') { fechados += v; fechadosQtd++; }
+      else if (c.etapa === 'perdido') { perdidosQtd++; }
+      else { ativo += v; }
+    });
+    var decididos = fechadosQtd + perdidosQtd;
+    var taxa = decididos ? Math.round(fechadosQtd * 100 / decididos) : null;
+
+    $('crmMetricas').innerHTML =
+      '<div class="metrica"><small>Pipeline ativo (mensal)</small><strong>' + moeda(ativo) + '</strong></div>' +
+      '<div class="metrica"><small>Fechados (mensal)</small><strong>' + moeda(fechados) + '</strong></div>' +
+      '<div class="metrica"><small>Negócios fechados</small><strong>' + fechadosQtd + '</strong></div>' +
+      '<div class="metrica"><small>Taxa de fechamento</small><strong>' + (taxa === null ? '—' : taxa + '%') + '</strong></div>';
+
+    // colunas
+    var board = $('kanban');
+    board.innerHTML = '';
+
+    ETAPAS.forEach(function (etapa, idxEtapa) {
+      var cards = lista.filter(function (c) { return c.etapa === etapa.id; });
+      var soma = cards.reduce(function (a, c) { return a + Number(c.valorMensal || 0); }, 0);
+
+      var col = document.createElement('div');
+      col.className = 'kanban-col';
+      col.innerHTML =
+        '<h3>' + etapa.nome + '<span class="qtd">' + cards.length + '</span></h3>' +
+        '<div class="col-soma">' + moeda(soma) + '/mês</div>' +
+        '<div class="kanban-cards"></div>';
+
+      var box = col.querySelector('.kanban-cards');
+
+      cards.forEach(function (card) {
+        var el = document.createElement('div');
+        el.className = 'card-crm';
+
+        var tags = [];
+        if (card.propostaCodigo) tags.push('<span class="tag ouro">' + escaparHtml(card.propostaCodigo) + '</span>');
+        if (card.contratoCodigo) tags.push('<span class="tag verde">' + escaparHtml(card.contratoCodigo) + '</span>');
+        tags.push('<span class="tag">' + escaparHtml(card.vendedor || '') + '</span>');
+
+        el.innerHTML =
+          '<div class="nome">' + escaparHtml(card.cliente || '(sem nome)') + '</div>' +
+          '<div class="valor">' + moeda(card.valorMensal) + ' <small>/mês</small></div>' +
+          '<div class="meta">' +
+            (card.contato ? '👤 ' + escaparHtml(card.contato) + '<br/>' : '') +
+            '⏱️ nesta etapa ' + diasAtras(card.movidoEm) +
+          '</div>' +
+          (card.notas ? '<div class="notas">📝 ' + escaparHtml(card.notas) + '</div>' : '') +
+          '<div class="tags">' + tags.join('') + '</div>' +
+          '<div class="acoes-card">' +
+            (idxEtapa > 0 ? '<button class="btn-icone" data-acao="voltar" title="Etapa anterior" type="button">◀</button>' : '') +
+            '<button class="btn-icone" data-acao="editar" title="Editar" type="button">✏️</button>' +
+            (card.etapa === 'oportunidade' ? '<button class="btn-icone" data-acao="proposta" title="Criar proposta" type="button">📝 Proposta</button>' : '') +
+            (card.telefone ? '<button class="btn-icone" data-acao="whats" title="Chamar no WhatsApp" type="button">💬</button>' : '') +
+            (idxEtapa < ETAPAS.length - 1 ? '<button class="btn-icone avancar" data-acao="avancar" title="Próxima etapa" type="button">▶</button>' : '') +
+          '</div>';
+
+        var voltar = el.querySelector('[data-acao="voltar"]');
+        if (voltar) voltar.addEventListener('click', function () {
+          var l = carregarCrm();
+          var c = l.find(function (x) { return x.id === card.id; });
+          moverCardEtapa(c, ETAPAS[idxEtapa - 1].id);
+          salvarCrm(l);
+          renderCrm();
+        });
+
+        var avancar = el.querySelector('[data-acao="avancar"]');
+        if (avancar) avancar.addEventListener('click', function () {
+          var l = carregarCrm();
+          var c = l.find(function (x) { return x.id === card.id; });
+          moverCardEtapa(c, ETAPAS[idxEtapa + 1].id);
+          salvarCrm(l);
+          renderCrm();
+          toast(card.cliente + ' → ' + ETAPAS[idxEtapa + 1].nome);
+        });
+
+        el.querySelector('[data-acao="editar"]').addEventListener('click', function () {
+          abrirModalCard(card.id);
+        });
+
+        var btnProp = el.querySelector('[data-acao="proposta"]');
+        if (btnProp) btnProp.addEventListener('click', function () {
+          estado.itens = [];
+          estado.cnpj = '';
+          estado.desconto = '0';
+          estado.cliente = card.cliente;
+          estado.contato = card.contato;
+          estado.telefone = card.telefone;
+          estado.vendedor = card.vendedor || estado.vendedor;
+          estado.crmId = card.id;
+          delete estado.codigo;
+          preencherFormulario();
+          salvarRascunho();
+          trocarVista('vistaCatalogo');
+          toast('Monte a proposta para ' + card.cliente + ' — ela ficará ligada a este card');
+        });
+
+        var btnWhats = el.querySelector('[data-acao="whats"]');
+        if (btnWhats) btnWhats.addEventListener('click', function () {
+          var fone = (card.telefone || '').replace(/\D/g, '');
+          if (fone && fone.length <= 11) fone = '55' + fone;
+          window.open('https://wa.me/' + fone, '_blank');
+        });
+
+        box.appendChild(el);
+      });
+
+      board.appendChild(col);
+    });
+  }
+
+  function abrirModalCard(idCard) {
+    cardEmEdicao = idCard || null;
+    var card = idCard ? carregarCrm().find(function (c) { return c.id === idCard; }) : null;
+
+    var selEtapa = $('kEtapa');
+    selEtapa.innerHTML = '';
+    ETAPAS.forEach(function (e) {
+      var o = document.createElement('option');
+      o.value = e.id;
+      o.textContent = e.nome;
+      selEtapa.appendChild(o);
+    });
+
+    $('modalCardTitulo').textContent = card ? 'Editar card' : 'Nova oportunidade';
+    $('kCliente').value = card ? card.cliente : '';
+    $('kContato').value = card ? card.contato : '';
+    $('kTelefone').value = card ? card.telefone : '';
+    $('kValor').value = card ? String(card.valorMensal || '') : '';
+    $('kVendedor').value = card ? (card.vendedor || 'Peeter') : 'Peeter';
+    $('kEtapa').value = card ? card.etapa : 'oportunidade';
+    $('kNotas').value = card ? (card.notas || '') : '';
+    $('kLinhaExcluir').style.display = card ? '' : 'none';
+
+    $('modalCard').classList.add('aberto');
+  }
+
+  function fecharModalCard() {
+    $('modalCard').classList.remove('aberto');
+    cardEmEdicao = null;
+  }
+
+  function salvarCardCrm() {
+    var nome = $('kCliente').value.trim();
+    if (!nome) { toast('Informe o nome do cliente.'); return; }
+
+    var lista = carregarCrm();
+    var card = cardEmEdicao ? lista.find(function (c) { return c.id === cardEmEdicao; }) : null;
+    if (!card) {
+      card = novoCardCrm();
+      lista.unshift(card);
+    }
+
+    card.cliente = nome;
+    card.contato = $('kContato').value.trim();
+    card.telefone = $('kTelefone').value.trim();
+    card.valorMensal = parseValor($('kValor').value);
+    card.vendedor = $('kVendedor').value;
+    if (card.etapa !== $('kEtapa').value) moverCardEtapa(card, $('kEtapa').value);
+    card.notas = $('kNotas').value.trim();
+    card.atualizadoEm = new Date().toISOString();
+
+    salvarCrm(lista);
+    fecharModalCard();
+    renderCrm();
+    toast('✓ Card salvo no funil');
+  }
+
+  function excluirCardCrm() {
+    if (!cardEmEdicao) return;
+    var lista = carregarCrm();
+    var card = lista.find(function (c) { return c.id === cardEmEdicao; });
+    if (!window.confirm('Excluir o card "' + (card ? card.cliente : '') + '" do funil?')) return;
+    salvarCrm(lista.filter(function (c) { return c.id !== cardEmEdicao; }));
+    fecharModalCard();
+    renderCrm();
+    toast('Card excluído');
+  }
+
+  /* ============================================================
      EVENTOS
   ============================================================ */
   function registrarEventos() {
@@ -2377,6 +2844,7 @@
       if (!window.confirm('Limpar a proposta atual? (o histórico não é afetado)')) return;
       estado.itens = [];
       delete estado.codigo;
+      estado.crmId = '';
       estado.cliente = ''; estado.cnpj = ''; estado.contato = ''; estado.telefone = '';
       estado.desconto = '0'; estado.obs = $('fObs').defaultValue;
       preencherFormulario();
@@ -2450,8 +2918,17 @@
       if (ev.target === this) fecharModal();
     });
 
+    // CRM
+    $('btnNovaOportunidade').addEventListener('click', function () { abrirModalCard(null); });
+    $('kSalvar').addEventListener('click', salvarCardCrm);
+    $('kCancelar').addEventListener('click', fecharModalCard);
+    $('kExcluir').addEventListener('click', excluirCardCrm);
+    $('modalCard').addEventListener('click', function (ev) {
+      if (ev.target === this) fecharModalCard();
+    });
+
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape') fecharModal();
+      if (ev.key === 'Escape') { fecharModal(); fecharModalCard(); }
     });
   }
 
