@@ -1599,7 +1599,7 @@
     vendedor: 'Peeter',
     periodo: '12', parcelas: '12', pagamento: 'Boleto',
     validade: '', inicio: '', desconto: '0',
-    obs: '', crmId: '', finalizada: false
+    obs: '', crmId: '', finalizada: false, tocadaEm: ''
   };
 
   function limparProposta(silencioso) {
@@ -1694,6 +1694,7 @@
   }
 
   function salvarRascunho() {
+    estado.tocadaEm = new Date().toISOString();
     armazem.setItem(CHAVE_RASCUNHO, JSON.stringify(estado));
   }
 
@@ -3842,8 +3843,10 @@
     renderCatalogo();
     renderItens();
     atualizarBarra();
-    // se a última proposta foi entregue, o app abre limpo para a próxima
-    if (estado.finalizada) {
+    // o app abre limpo, exceto se houver uma proposta em andamento recente (última hora)
+    var UMA_HORA = 60 * 60 * 1000;
+    var rascunhoVelho = !estado.tocadaEm || (Date.now() - Date.parse(estado.tocadaEm) > UMA_HORA);
+    if (estado.finalizada || rascunhoVelho) {
       limparProposta(true);
       renderCatalogo();
     }
