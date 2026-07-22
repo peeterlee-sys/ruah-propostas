@@ -1086,6 +1086,7 @@
     <button class="aba" data-vista="vistaHistorico" type="button">🗂️ Histórico</button>
     <button class="aba" data-vista="vistaContratos" type="button">📑 Contratos</button>
     <button class="aba" data-vista="vistaCrm" type="button">🎯 CRM</button>
+    <button class="aba" data-vista="vistaClientes" type="button">👥 Clientes</button>
   </nav>
 </header>
 
@@ -1330,6 +1331,15 @@
     <div class="crm-metricas" id="crmMetricas"></div>
     <div class="kanban" id="kanban"></div>
   </section>
+
+  <!-- =============== CLIENTES =============== -->
+  <section class="vista" id="vistaClientes">
+    <div class="toolbar">
+      <div class="busca"><input id="buscaClientes" placeholder="Buscar por nome, CNPJ ou contato..." /></div>
+      <button class="btn btn-dourado" id="btnNovoCliente" type="button">+ Novo cliente</button>
+    </div>
+    <div class="hist-lista" id="listaClientes"></div>
+  </section>
 </main>
 
 <div class="barra-carrinho" id="barraCarrinho">
@@ -1386,6 +1396,66 @@
     </div>
     <div class="acoes" id="mLinhaExcluir" style="display:none;">
       <button class="btn" id="mExcluir" type="button" style="background:var(--vermelho-claro);color:var(--vermelho);">Excluir ponto do catálogo</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal cliente -->
+<div class="modal-fundo" id="modalCliente">
+  <div class="modal">
+    <h3 id="modalClienteTitulo">Novo cliente</h3>
+    <label for="cliCnpj">CNPJ</label>
+    <div class="row2" style="grid-template-columns:1fr auto;">
+      <input id="cliCnpj" placeholder="00.000.000/0000-00" inputmode="numeric" />
+      <button class="btn btn-primario" id="cliBuscar" type="button" style="margin-bottom:14px;">🔍 Buscar</button>
+    </div>
+    <label for="cliRazao">Razão social / nome</label>
+    <input id="cliRazao" />
+    <div class="row2">
+      <div>
+        <label for="cliContato">Contato (quem decide)</label>
+        <input id="cliContato" />
+      </div>
+      <div>
+        <label for="cliTelefone">WhatsApp</label>
+        <input id="cliTelefone" inputmode="tel" />
+      </div>
+    </div>
+    <label for="cliEmail">E-mail (boleto e NF)</label>
+    <input id="cliEmail" type="email" />
+    <div class="row2">
+      <div>
+        <label for="cliLogradouro">Logradouro</label>
+        <input id="cliLogradouro" />
+      </div>
+      <div>
+        <label for="cliNumero">Número</label>
+        <input id="cliNumero" />
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label for="cliBairro">Bairro</label>
+        <input id="cliBairro" />
+      </div>
+      <div>
+        <label for="cliCidade">Cidade</label>
+        <input id="cliCidade" />
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label for="cliUf">UF</label>
+        <input id="cliUf" maxlength="2" />
+      </div>
+      <div></div>
+    </div>
+    <div class="acoes">
+      <button class="btn btn-primario" id="cliSalvar" type="button">Salvar</button>
+      <button class="btn btn-claro" id="cliCancelar" type="button">Cancelar</button>
+    </div>
+    <div class="acoes" id="cliLinhaExcluir" style="display:none;">
+      <button class="btn" id="cliExcluir" type="button" style="background:var(--vermelho-claro);color:var(--vermelho);">Excluir cliente</button>
     </div>
   </div>
 </div>
@@ -1714,6 +1784,7 @@
       renderListaContratos();
     }
     if (idVista === 'vistaCrm') renderCrm();
+    if (idVista === 'vistaClientes') renderClientes();
     document.body.classList.toggle('print-contrato', idVista === 'vistaContratos');
     atualizarBarra();
     window.scrollTo({ top: 0 });
@@ -2090,6 +2161,9 @@
     // alimenta o funil do CRM automaticamente
     estado.crmId = atualizarCrmComProposta(registro, estado.crmId);
 
+    // alimenta a base de clientes
+    upsertCliente({ razao: estado.cliente, doc: estado.cnpj, contato: estado.contato, telefone: estado.telefone });
+
     // marca como finalizada: a próxima proposta começará com os campos zerados
     estado.finalizada = true;
 
@@ -2372,6 +2446,19 @@
     contrato.vendedor = snapshot.vendedor || '';
     contrato.itens = JSON.parse(JSON.stringify(snapshot.itens || []));
     if (contrato.inicio) contrato.fim = somarMeses(contrato.inicio, contrato.meses);
+
+    // completa com o que a base de clientes já sabe (endereço, e-mail etc.)
+    var cliBase = encontrarCliente(snapshot.cnpj, snapshot.cliente);
+    if (cliBase) {
+      if (!contrato.cliente.doc && cliBase.doc) contrato.cliente.doc = cliBase.doc;
+      if (!contrato.cliente.representante && cliBase.contato) contrato.cliente.representante = cliBase.contato;
+      contrato.cliente.email = cliBase.email || contrato.cliente.email;
+      contrato.cliente.logradouro = cliBase.logradouro || '';
+      contrato.cliente.numero = cliBase.numero || '';
+      contrato.cliente.bairro = cliBase.bairro || '';
+      if (cliBase.cidade) contrato.cliente.cidade = cliBase.cidade;
+      if (cliBase.uf) contrato.cliente.uf = cliBase.uf;
+    }
   }
 
   function preencherFormularioContrato() {
@@ -2592,6 +2679,14 @@
     // move o card do CRM para "Fechado" automaticamente
     marcarFechadoCrm(contrato.propostaCodigo, contrato.codigo, contrato);
 
+    // alimenta a base de clientes com a qualificação completa
+    upsertCliente({
+      razao: contrato.cliente.razao, doc: contrato.cliente.doc,
+      contato: contrato.cliente.representante, email: contrato.cliente.email,
+      logradouro: contrato.cliente.logradouro, numero: contrato.cliente.numero,
+      bairro: contrato.cliente.bairro, cidade: contrato.cliente.cidade, uf: contrato.cliente.uf
+    });
+
     renderDocContrato();
     renderListaContratos();
     toast('💾 Contrato ' + contrato.codigo + ' salvo!' + (contrato.propostaCodigo ? ' Proposta marcada como fechada ✅' : ''));
@@ -2646,6 +2741,219 @@
 
       box.appendChild(div);
     });
+  }
+
+  /* ============================================================
+     BASE DE CLIENTES + BUSCA DE CNPJ (BrasilAPI)
+  ============================================================ */
+  var CHAVE_CLIENTES = 'ruah_clientes_v1';
+  var clienteEmEdicao = null;
+
+  function carregarClientes() {
+    try {
+      var l = JSON.parse(armazem.getItem(CHAVE_CLIENTES) || '[]');
+      return Array.isArray(l) ? l : [];
+    } catch (e) { return []; }
+  }
+
+  function salvarClientes(lista) {
+    armazem.setItem(CHAVE_CLIENTES, JSON.stringify(lista));
+    agendarSync();
+  }
+
+  function normDoc(s) { return String(s || '').replace(/\D/g, ''); }
+
+  function formatarCnpj(d) {
+    d = normDoc(d);
+    if (d.length === 14) return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    if (d.length === 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    return d;
+  }
+
+  function encontrarCliente(doc, nome) {
+    var lista = carregarClientes();
+    var d = normDoc(doc);
+    var achado = d ? lista.find(function (c) { return normDoc(c.doc) === d; }) : null;
+    if (!achado && nome) {
+      var n = String(nome).trim().toLowerCase();
+      achado = lista.find(function (c) { return (c.razao || '').trim().toLowerCase() === n; });
+    }
+    return achado || null;
+  }
+
+  /* guarda/atualiza cliente na base — só preenche o que vier com valor */
+  function upsertCliente(dados) {
+    if (!dados || (!(dados.razao || '').trim() && !normDoc(dados.doc))) return null;
+    var lista = carregarClientes();
+    var cli = encontrarCliente(dados.doc, dados.razao);
+    if (!cli) {
+      cli = {
+        id: 'cli' + Date.now() + Math.floor(Math.random() * 10000),
+        razao: '', doc: '', contato: '', telefone: '', email: '',
+        logradouro: '', numero: '', bairro: '', cidade: '', uf: '',
+        criadoEm: new Date().toISOString()
+      };
+      lista.unshift(cli);
+    }
+    ['razao', 'doc', 'contato', 'telefone', 'email', 'logradouro', 'numero', 'bairro', 'cidade', 'uf'].forEach(function (campo) {
+      if (dados[campo] && String(dados[campo]).trim()) cli[campo] = String(dados[campo]).trim();
+    });
+    cli.atualizadoEm = new Date().toISOString();
+    salvarClientes(lista);
+    return cli;
+  }
+
+  function buscarCnpjApi(cnpj) {
+    var d = normDoc(cnpj);
+    if (d.length !== 14) return Promise.resolve(null);
+    return fetch('https://brasilapi.com.br/api/cnpj/v1/' + d)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  function dadosDaApi(j) {
+    if (!j) return null;
+    return {
+      razao: j.razao_social || '',
+      doc: formatarCnpj(j.cnpj || ''),
+      email: (j.email || '').toLowerCase(),
+      telefone: j.ddd_telefone_1 || '',
+      logradouro: ((j.descricao_tipo_de_logradouro || '') + ' ' + (j.logradouro || '')).trim(),
+      numero: j.numero || '',
+      bairro: j.bairro || '',
+      cidade: j.municipio ? j.municipio.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); }) : '',
+      uf: j.uf || ''
+    };
+  }
+
+  function renderClientes() {
+    var box = $('listaClientes');
+    var filtro = ($('buscaClientes').value || '').toLowerCase();
+    var lista = carregarClientes().slice().sort(function (a, b) {
+      return (a.razao || '').localeCompare(b.razao || '', 'pt-BR');
+    });
+
+    if (filtro) {
+      lista = lista.filter(function (c) {
+        return ((c.razao || '') + ' ' + (c.doc || '') + ' ' + (c.contato || '')).toLowerCase().indexOf(filtro) !== -1;
+      });
+    }
+
+    box.innerHTML = '';
+    if (!lista.length) {
+      box.innerHTML = '<div class="vazio">Nenhum cliente ' + (filtro ? 'encontrado' : 'cadastrado ainda') +
+        '.<br/>A base se alimenta sozinha das propostas e contratos salvos — ou cadastre pelo botão acima.</div>';
+      return;
+    }
+
+    lista.forEach(function (c) {
+      var div = document.createElement('div');
+      div.className = 'hist-item';
+      var linhas = [];
+      if (c.contato || c.telefone) linhas.push('👤 ' + [c.contato, c.telefone].filter(Boolean).join(' · '));
+      if (c.email) linhas.push('✉️ ' + c.email);
+      var endereco = [c.logradouro, c.numero].filter(Boolean).join(', ');
+      if (endereco || c.cidade) linhas.push('📍 ' + [endereco, c.bairro, c.cidade && (c.cidade + '/' + (c.uf || ''))].filter(Boolean).join(' — '));
+
+      div.innerHTML =
+        '<div class="info">' +
+          '<div class="codigo">' + (c.doc ? escaparHtml(formatarCnpj(c.doc)) : 'sem CNPJ') + '</div>' +
+          '<div class="cliente">' + escaparHtml(c.razao || '(sem nome)') + '</div>' +
+          '<div class="detalhes">' + escaparHtml(linhas.join('  ·  ')) + '</div>' +
+        '</div>' +
+        '<div class="hist-acoes">' +
+          '<button class="btn-mini" data-acao="proposta" type="button">📝 Proposta</button>' +
+          '<button class="btn-mini" data-acao="editar" type="button">✏️ Editar</button>' +
+          '<button class="btn-mini perigo" data-acao="excluir" type="button">Excluir</button>' +
+        '</div>';
+
+      div.querySelector('[data-acao="proposta"]').addEventListener('click', function () {
+        limparProposta(true);
+        estado.cliente = c.razao;
+        estado.cnpj = c.doc;
+        estado.contato = c.contato;
+        estado.telefone = c.telefone;
+        preencherFormulario();
+        salvarRascunho();
+        trocarVista('vistaCatalogo');
+        toast('Monte a proposta para ' + c.razao);
+      });
+
+      div.querySelector('[data-acao="editar"]').addEventListener('click', function () {
+        abrirModalCliente(c.id);
+      });
+
+      div.querySelector('[data-acao="excluir"]').addEventListener('click', function () {
+        if (!window.confirm('Excluir "' + c.razao + '" da base de clientes?')) return;
+        salvarClientes(carregarClientes().filter(function (x) { return x.id !== c.id; }));
+        registrarExclusao('cliente', c.id);
+        renderClientes();
+        toast('Cliente excluído');
+      });
+
+      box.appendChild(div);
+    });
+  }
+
+  function abrirModalCliente(id) {
+    clienteEmEdicao = id || null;
+    var c = id ? carregarClientes().find(function (x) { return x.id === id; }) : null;
+    $('modalClienteTitulo').textContent = c ? 'Editar cliente' : 'Novo cliente';
+    $('cliCnpj').value = c ? (c.doc || '') : '';
+    $('cliRazao').value = c ? (c.razao || '') : '';
+    $('cliContato').value = c ? (c.contato || '') : '';
+    $('cliTelefone').value = c ? (c.telefone || '') : '';
+    $('cliEmail').value = c ? (c.email || '') : '';
+    $('cliLogradouro').value = c ? (c.logradouro || '') : '';
+    $('cliNumero').value = c ? (c.numero || '') : '';
+    $('cliBairro').value = c ? (c.bairro || '') : '';
+    $('cliCidade').value = c ? (c.cidade || '') : 'Balneário Camboriú';
+    $('cliUf').value = c ? (c.uf || '') : 'SC';
+    $('cliLinhaExcluir').style.display = c ? '' : 'none';
+    $('modalCliente').classList.add('aberto');
+  }
+
+  function fecharModalCliente() {
+    $('modalCliente').classList.remove('aberto');
+    clienteEmEdicao = null;
+  }
+
+  function preencherModalClienteComApi(d) {
+    if (d.razao) $('cliRazao').value = d.razao;
+    if (d.doc) $('cliCnpj').value = d.doc;
+    if (d.email && !$('cliEmail').value) $('cliEmail').value = d.email;
+    if (d.telefone && !$('cliTelefone').value) $('cliTelefone').value = d.telefone;
+    if (d.logradouro) $('cliLogradouro').value = d.logradouro;
+    if (d.numero) $('cliNumero').value = d.numero;
+    if (d.bairro) $('cliBairro').value = d.bairro;
+    if (d.cidade) $('cliCidade').value = d.cidade;
+    if (d.uf) $('cliUf').value = d.uf;
+  }
+
+  function salvarClienteModal() {
+    var razao = $('cliRazao').value.trim();
+    if (!razao) { toast('Informe a razão social.'); return; }
+    var lista = carregarClientes();
+    var c = clienteEmEdicao ? lista.find(function (x) { return x.id === clienteEmEdicao; }) : null;
+    if (!c) {
+      c = { id: 'cli' + Date.now() + Math.floor(Math.random() * 10000), criadoEm: new Date().toISOString() };
+      lista.unshift(c);
+    }
+    c.razao = razao;
+    c.doc = $('cliCnpj').value.trim();
+    c.contato = $('cliContato').value.trim();
+    c.telefone = $('cliTelefone').value.trim();
+    c.email = $('cliEmail').value.trim();
+    c.logradouro = $('cliLogradouro').value.trim();
+    c.numero = $('cliNumero').value.trim();
+    c.bairro = $('cliBairro').value.trim();
+    c.cidade = $('cliCidade').value.trim();
+    c.uf = $('cliUf').value.trim().toUpperCase();
+    c.atualizadoEm = new Date().toISOString();
+    salvarClientes(lista);
+    fecharModalCliente();
+    renderClientes();
+    toast('✓ Cliente salvo');
   }
 
   /* ============================================================
@@ -3107,6 +3415,7 @@
       historico: carregarHistorico(),
       contratos: carregarContratos(),
       crm: carregarCrm(),
+      clientes: carregarClientes(),
       catalogo: { dados: catalogo, em: armazem.getItem(CHAVE_CAT_EM) || '' },
       empresa: { dados: empresa, em: armazem.getItem(CHAVE_EMP_EM) || '' },
       lixeira: carregarLixeira()
@@ -3154,6 +3463,7 @@
       historico: fundirPorChave(local.historico, remoto.historico, 'codigo', 'data').filter(naoExcluido('historico', 'codigo')),
       contratos: fundirPorChave(local.contratos, remoto.contratos, 'codigo', 'data').filter(naoExcluido('contrato', 'codigo')),
       crm: fundirPorChave(local.crm, remoto.crm, 'id', 'atualizadoEm').filter(naoExcluido('crm', 'id')),
+      clientes: fundirPorChave(local.clientes, remoto.clientes, 'id', 'atualizadoEm').filter(naoExcluido('cliente', 'id')),
       catalogo: catalogoF,
       empresa: empresaF,
       lixeira: lixLista
@@ -3166,6 +3476,7 @@
       armazem.setItem(CHAVE_HISTORICO, JSON.stringify(p.historico || []));
       armazem.setItem(CHAVE_CONTRATOS, JSON.stringify(p.contratos || []));
       armazem.setItem(CHAVE_CRM, JSON.stringify(p.crm || []));
+      armazem.setItem(CHAVE_CLIENTES, JSON.stringify(p.clientes || []));
       if (p.catalogo && Array.isArray(p.catalogo.dados) && p.catalogo.dados.length) {
         catalogo = p.catalogo.dados;
         armazem.setItem(CHAVE_CATALOGO, JSON.stringify(catalogo));
@@ -3184,6 +3495,7 @@
         if (ativa.id === 'vistaCatalogo') renderCatalogo();
         if (ativa.id === 'vistaHistorico') renderHistorico();
         if (ativa.id === 'vistaCrm') renderCrm();
+        if (ativa.id === 'vistaClientes') renderClientes();
       }
       atualizarBarra();
     } finally {
@@ -3369,6 +3681,94 @@
       if (ev.target === this) fecharModalCard();
     });
 
+    // busca automática de CNPJ — formulário da proposta
+    $('fCnpj').addEventListener('change', function () {
+      var digitos = normDoc(this.value);
+      if (digitos.length !== 14) return;
+      this.value = formatarCnpj(digitos);
+      var base = encontrarCliente(digitos, '');
+      if (base) {
+        if (!$('fCliente').value) $('fCliente').value = base.razao || '';
+        if (!$('fContato').value) $('fContato').value = base.contato || '';
+        if (!$('fTelefone').value) $('fTelefone').value = base.telefone || '';
+        lerFormulario();
+        renderTotais();
+        toast('✓ Cliente encontrado na base');
+        return;
+      }
+      toast('🔍 Buscando CNPJ na Receita…');
+      buscarCnpjApi(digitos).then(function (j) {
+        var d = dadosDaApi(j);
+        if (!d || !d.razao) { toast('CNPJ não encontrado — preencha manualmente'); return; }
+        if (!$('fCliente').value) $('fCliente').value = d.razao;
+        if (!$('fTelefone').value && d.telefone) $('fTelefone').value = d.telefone;
+        lerFormulario();
+        renderTotais();
+        upsertCliente(d);
+        toast('✓ ' + d.razao + ' — dados salvos na base');
+      });
+    });
+
+    // busca automática de CNPJ — formulário do contrato
+    $('cCnpjDoc').addEventListener('change', function () {
+      var digitos = normDoc(this.value);
+      if (digitos.length !== 14) return;
+      this.value = formatarCnpj(digitos);
+      function aplicar(d, origem) {
+        if (!$('cRazao').value && d.razao) $('cRazao').value = d.razao;
+        if (d.logradouro) $('cLogradouro').value = $('cLogradouro').value || d.logradouro;
+        if (d.numero) $('cNumero').value = $('cNumero').value || d.numero;
+        if (d.bairro) $('cBairro').value = $('cBairro').value || d.bairro;
+        if (d.cidade) $('cCidade').value = d.cidade;
+        if (d.uf) $('cUf').value = d.uf;
+        if (d.email && !$('cEmail').value) $('cEmail').value = d.email;
+        if (d.contato && !$('cRepresentante').value) $('cRepresentante').value = d.contato;
+        lerFormularioContrato();
+        renderDocContrato();
+        toast(origem);
+      }
+      var base = encontrarCliente(digitos, '');
+      if (base) { aplicar(base, '✓ Cliente encontrado na base'); return; }
+      toast('🔍 Buscando CNPJ na Receita…');
+      buscarCnpjApi(digitos).then(function (j) {
+        var d = dadosDaApi(j);
+        if (!d || !d.razao) { toast('CNPJ não encontrado — preencha manualmente'); return; }
+        upsertCliente(d);
+        aplicar(d, '✓ ' + d.razao);
+      });
+    });
+
+    // clientes
+    $('buscaClientes').addEventListener('input', renderClientes);
+    $('btnNovoCliente').addEventListener('click', function () { abrirModalCliente(null); });
+    $('cliBuscar').addEventListener('click', function () {
+      var digitos = normDoc($('cliCnpj').value);
+      if (digitos.length !== 14) { toast('Digite o CNPJ completo (14 números).'); return; }
+      toast('🔍 Buscando CNPJ na Receita…');
+      buscarCnpjApi(digitos).then(function (j) {
+        var d = dadosDaApi(j);
+        if (!d || !d.razao) { toast('CNPJ não encontrado.'); return; }
+        preencherModalClienteComApi(d);
+        toast('✓ ' + d.razao);
+      });
+    });
+    $('cliSalvar').addEventListener('click', salvarClienteModal);
+    $('cliCancelar').addEventListener('click', fecharModalCliente);
+    $('cliExcluir').addEventListener('click', function () {
+      if (!clienteEmEdicao) return;
+      var c = carregarClientes().find(function (x) { return x.id === clienteEmEdicao; });
+      if (!window.confirm('Excluir "' + (c ? c.razao : '') + '" da base?')) return;
+      var idExc = clienteEmEdicao;
+      salvarClientes(carregarClientes().filter(function (x) { return x.id !== idExc; }));
+      registrarExclusao('cliente', idExc);
+      fecharModalCliente();
+      renderClientes();
+      toast('Cliente excluído');
+    });
+    $('modalCliente').addEventListener('click', function (ev) {
+      if (ev.target === this) fecharModalCliente();
+    });
+
     // sincronização
     $('chipSync').addEventListener('click', abrirModalSync);
     $('sFechar').addEventListener('click', fecharModalSync);
@@ -3406,7 +3806,7 @@
     }, 90000);
 
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape') { fecharModal(); fecharModalCard(); fecharModalSync(); }
+      if (ev.key === 'Escape') { fecharModal(); fecharModalCard(); fecharModalSync(); fecharModalCliente(); }
     });
   }
 
