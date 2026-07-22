@@ -1141,6 +1141,20 @@
 
         <div class="row2">
           <div>
+            <label for="fEmail">E-mail do cliente</label>
+            <input id="fEmail" type="email" placeholder="para o follow-up automático" />
+          </div>
+          <div>
+            <label for="fFollowup">Follow-up automático</label>
+            <select id="fFollowup">
+              <option value="sim">Sim — e-mail no envio e 2 dias depois</option>
+              <option value="nao">Não enviar e-mails ao cliente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
             <label for="fPeriodo">Período do contrato</label>
             <select id="fPeriodo">
               <option value="12">12 meses</option>
@@ -1595,7 +1609,7 @@
 
   var estado = {
     itens: [],           // { uid, refId, nome, endereco, tamanho, resolucao, impacto, impactoNumero, maps, valor }
-    cliente: '', cnpj: '', contato: '', telefone: '',
+    cliente: '', cnpj: '', contato: '', telefone: '', email: '', followup: 'sim',
     vendedor: 'Peeter',
     periodo: '12', parcelas: '12', pagamento: 'Boleto',
     validade: '', inicio: '', desconto: '0',
@@ -1608,6 +1622,7 @@
     estado.crmId = '';
     estado.finalizada = false;
     estado.cliente = ''; estado.cnpj = ''; estado.contato = ''; estado.telefone = '';
+    estado.email = ''; estado.followup = 'sim';
     estado.desconto = '0';
     estado.validade = '';
     estado.inicio = '';
@@ -1954,6 +1969,8 @@
     estado.cnpj = $('fCnpj').value;
     estado.contato = $('fContato').value;
     estado.telefone = $('fTelefone').value;
+    estado.email = $('fEmail').value.trim();
+    estado.followup = $('fFollowup').value;
     estado.vendedor = $('fVendedor').value;
     estado.periodo = $('fPeriodo').value;
     estado.parcelas = $('fParcelas').value;
@@ -1970,6 +1987,8 @@
     $('fCnpj').value = estado.cnpj || '';
     $('fContato').value = estado.contato || '';
     $('fTelefone').value = estado.telefone || '';
+    $('fEmail').value = estado.email || '';
+    $('fFollowup').value = estado.followup || 'sim';
     $('fVendedor').value = estado.vendedor || 'Peeter';
     $('fPeriodo').value = estado.periodo || '12';
     $('fParcelas').value = estado.parcelas || '12';
@@ -2167,7 +2186,7 @@
     estado.crmId = atualizarCrmComProposta(registro, estado.crmId);
 
     // alimenta a base de clientes
-    upsertCliente({ razao: estado.cliente, doc: estado.cnpj, contato: estado.contato, telefone: estado.telefone });
+    upsertCliente({ razao: estado.cliente, doc: estado.cnpj, contato: estado.contato, telefone: estado.telefone, email: estado.email });
 
     // marca como finalizada: a próxima proposta começará com os campos zerados
     estado.finalizada = true;
@@ -2890,6 +2909,7 @@
         estado.cnpj = c.doc;
         estado.contato = c.contato;
         estado.telefone = c.telefone;
+        estado.email = c.email || '';
         preencherFormulario();
         salvarRascunho();
         trocarVista('vistaCatalogo');
@@ -3041,6 +3061,17 @@
       card.telefone = registro.estado.telefone || card.telefone;
     }
     if (card.etapa === 'oportunidade') moverCardEtapa(card, 'enviada');
+
+    // agenda o follow-up interno: +2 dias (pulando fim de semana), às 10h
+    if (!card.lembreteEm || Date.parse(card.lembreteEm) < Date.now()) {
+      var d = new Date();
+      d.setDate(d.getDate() + 2);
+      if (d.getDay() === 6) d.setDate(d.getDate() + 2); // sábado → segunda
+      if (d.getDay() === 0) d.setDate(d.getDate() + 1); // domingo → segunda
+      card.lembreteEm = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + 'T10:00';
+      card.lembreteNota = 'Follow-up da ' + registro.codigo;
+    }
+
     card.atualizadoEm = new Date().toISOString();
     salvarCrm(lista);
     return card.id;
@@ -3631,7 +3662,7 @@
     $('btnSalvarHist').addEventListener('click', salvarNoHistorico);
 
     // formulário: qualquer alteração atualiza o estado + totais
-    ['fCliente','fCnpj','fContato','fTelefone','fVendedor','fPeriodo','fParcelas','fPagamento','fValidade','fInicio','fDesconto','fObs']
+    ['fCliente','fCnpj','fContato','fTelefone','fEmail','fFollowup','fVendedor','fPeriodo','fParcelas','fPagamento','fValidade','fInicio','fDesconto','fObs']
       .forEach(function (id) {
         $(id).addEventListener('input', function () {
           estado.finalizada = false;
@@ -3708,6 +3739,7 @@
         if (!$('fCliente').value) $('fCliente').value = base.razao || '';
         if (!$('fContato').value) $('fContato').value = base.contato || '';
         if (!$('fTelefone').value) $('fTelefone').value = base.telefone || '';
+        if (!$('fEmail').value) $('fEmail').value = base.email || '';
         lerFormulario();
         renderTotais();
         toast('✓ Cliente encontrado na base');
@@ -3719,6 +3751,7 @@
         if (!d || !d.razao) { toast('CNPJ não encontrado — preencha manualmente'); return; }
         if (!$('fCliente').value) $('fCliente').value = d.razao;
         if (!$('fTelefone').value && d.telefone) $('fTelefone').value = d.telefone;
+        if (!$('fEmail').value && d.email) $('fEmail').value = d.email;
         lerFormulario();
         renderTotais();
         upsertCliente(d);
