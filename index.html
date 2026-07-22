@@ -2090,6 +2090,8 @@
     if (!validarAntesDeEnviar()) return;
     renderDocumento();
     imprimirComTitulo('Proposta de Mídia | Ruah');
+    estado.finalizada = true; // proposta entregue: próxima começa zerada
+    salvarRascunho();
   }
 
   function textoWhatsApp() {
@@ -2121,6 +2123,8 @@
     if (fone && fone.length <= 11) fone = '55' + fone;
     var url = 'https://wa.me/' + fone + '?text=' + encodeURIComponent(textoWhatsApp());
     window.open(url, '_blank');
+    estado.finalizada = true; // proposta entregue: próxima começa zerada
+    salvarRascunho();
   }
 
   function copiarResumo() {
@@ -2314,12 +2318,24 @@
   var CHAVE_CONTRATOS = 'ruah_contratos_v1';
   var CHAVE_CONT_CONTRATO = 'ruah_contador_contrato_v1';
 
+  /* dados oficiais da Ruah (cartão CNPJ) — padrão permanente em todos os aparelhos */
+  var EMPRESA_PADRAO = {
+    razao: 'Ruah Publicidade Ltda',
+    cnpj: '45.902.748/0001-18',
+    respNome: 'Peeter Lee Grando',
+    respCpf: '',
+    endereco: 'Rua 700, nº 489, Sala 2103 — Centro, Balneário Camboriú/SC, CEP 88.330-620'
+  };
+
   var empresa = (function () {
-    try {
-      var e = JSON.parse(armazem.getItem(CHAVE_EMPRESA) || 'null');
-      if (e && typeof e === 'object') return e;
-    } catch (err) {}
-    return { razao: '', cnpj: '', respNome: '', respCpf: '', endereco: '' };
+    var e = null;
+    try { e = JSON.parse(armazem.getItem(CHAVE_EMPRESA) || 'null'); } catch (err) {}
+    if (!e || typeof e !== 'object') e = {};
+    // campos vazios ganham o padrão oficial; o que já foi preenchido é respeitado
+    Object.keys(EMPRESA_PADRAO).forEach(function (k) {
+      if (!e[k]) e[k] = EMPRESA_PADRAO[k];
+    });
+    return e;
   })();
 
   var contrato = contratoVazio();
@@ -3826,6 +3842,11 @@
     renderCatalogo();
     renderItens();
     atualizarBarra();
+    // se a última proposta foi entregue, o app abre limpo para a próxima
+    if (estado.finalizada) {
+      limparProposta(true);
+      renderCatalogo();
+    }
     setChip();
     if (configSync().token) sincronizar('inicio');
   }
