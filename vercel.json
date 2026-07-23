@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "env": {
-    "ZAPSIGN_API_KEY": "@zapsign_api_key"
-  },
   "functions": {
     "api/*.js": {
       "runtime": "nodejs18.x"
