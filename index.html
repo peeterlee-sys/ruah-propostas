@@ -1063,6 +1063,7 @@
     .doc-contrato .clausula, .doc-contrato .assinaturas { break-inside: avoid; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -1160,6 +1161,7 @@
               <option value="12">12 meses</option>
               <option value="6">6 meses</option>
               <option value="3">3 meses</option>
+              <option value="2">2 meses</option>
               <option value="1">Avulso / 1 mês</option>
             </select>
           </div>
@@ -1238,6 +1240,7 @@
       <button class="btn btn-claro" id="btnContratoDaProposta" type="button">📝 Usar proposta atual</button>
       <div class="espacador"></div>
       <button class="btn btn-primario" id="btnImprimirContrato" type="button">🖨️ Salvar PDF / Imprimir</button>
+      <button class="btn btn-dourado" id="btnEnviarZapsign" type="button">✍️ Enviar para Assinatura</button>
       <button class="btn btn-dourado" id="btnSalvarContrato" type="button">💾 Salvar contrato</button>
     </div>
     <div class="layout-contrato">
@@ -2728,6 +2731,112 @@
     toast('💾 Contrato ' + contrato.codigo + ' salvo!' + (contrato.propostaCodigo ? ' Proposta marcada como fechada ✅' : ''));
   }
 
+  function enviarParaAssinatura() {
+    lerFormularioContrato();
+
+    if (!contrato.cliente.razao) {
+      toast('❌ Informe a razão social do cliente.');
+      return;
+    }
+
+    if (!contrato.cliente.email) {
+      toast('❌ Informe o e-mail do cliente.');
+      return;
+    }
+
+    if (!contrato.itens.length) {
+      toast('❌ Gere o contrato a partir de uma proposta primeiro.');
+      return;
+    }
+
+    var btn = $('btnEnviarZapsign');
+    var textOriginal = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Gerando PDF...';
+
+    // Gerar PDF do contrato
+    var element = $('docContrato');
+    var opt = {
+      margin: 10,
+      filename: 'CONT-' + contrato.codigo + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+    };
+
+    html2pdf().set(opt).from(element).toPdf().output('dataurlstring').then(function(pdfDataUrl) {
+      // Extrair base64 do data URL
+      var base64 = pdfDataUrl.split(',')[1];
+
+      btn.textContent = '⏳ Enviando para ZapSign...';
+
+      // Dados dos assinantes
+      var signatarios = [
+        {
+          nome: contrato.cliente.representante || contrato.cliente.razao,
+          email: contrato.cliente.email,
+          telefone: contrato.cliente.telefone || ''
+        },
+        {
+          nome: contrato.empresa.responsavel || 'Ruah Publicidade',
+          email: contrato.empresa.email || 'adm@ruahled.com.br',
+          telefone: contrato.empresa.telefone || ''
+        }
+      ];
+
+      // Chamar API do Vercel
+      fetch('/api/zapsign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          base64_pdf: base64,
+          nome_documento: 'CONT-' + contrato.codigo + ' - ' + contrato.cliente.razao,
+          signatarios: signatarios
+        })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.sucesso) {
+          // Armazenar dados da assinatura em localStorage
+          var assinaturas = JSON.parse(localStorage.getItem('ruah_assinaturas_v1') || '{}');
+          assinaturas[contrato.codigo] = {
+            documento_id: data.documento_id,
+            link_assinatura: data.link_assinatura,
+            status: data.status,
+            criado_em: data.criado_em,
+            contrato_codigo: contrato.codigo,
+            cliente_razao: contrato.cliente.razao
+          };
+          localStorage.setItem('ruah_assinaturas_v1', JSON.stringify(assinaturas));
+
+          btn.disabled = false;
+          btn.textContent = textOriginal;
+
+          toast('✅ Contrato enviado para ZapSign! Link copiado.');
+
+          // Copiar link para clipboard e abrir
+          var link = data.link_assinatura;
+          navigator.clipboard.writeText(link).catch(function() {
+            console.log('Não conseguiu copiar link');
+          });
+
+          // Abrir em nova aba
+          window.open(link, '_blank');
+        } else {
+          throw new Error(data.error || 'Erro ao enviar para ZapSign');
+        }
+      })
+      .catch(function(err) {
+        console.error('Erro:', err);
+        btn.disabled = false;
+        btn.textContent = textOriginal;
+        toast('❌ Erro ao enviar para ZapSign: ' + err.message);
+      });
+    });
+  }
+
   function renderListaContratos() {
     var box = $('listaContratos');
     var lista = carregarContratos();
@@ -3692,6 +3801,7 @@
       toast('📑 Contrato pré-preenchido com a proposta atual');
     });
     $('btnImprimirContrato').addEventListener('click', imprimirContrato);
+    $('btnEnviarZapsign').addEventListener('click', enviarParaAssinatura);
     $('btnSalvarContrato').addEventListener('click', salvarContratoAtual);
 
     ['eRazao','eCnpj','eRespNome','eRespCpf','eEndereco',
