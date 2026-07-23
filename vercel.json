@@ -1,9 +1,3 @@
 {
-  "version": 2,
-  "functions": {
-    "api/zapsign.js": {
-      "maxDuration": 60,
-      "memory": 1024
-    }
-  }
+  "version": 2
 }

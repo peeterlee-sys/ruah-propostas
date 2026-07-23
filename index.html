@@ -1063,6 +1063,7 @@
     .doc-contrato .clausula, .doc-contrato .assinaturas { break-inside: avoid; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -2775,28 +2776,36 @@
       }
     ];
 
-    // Envia o HTML real do contrato (o mesmo exibido em tela / usado no "Salvar PDF")
-    // + o CSS da página, para o servidor renderizar um PDF idêntico via Chrome headless.
-    var estiloEl = document.querySelector('style');
-    var htmlContrato = $('docContrato').outerHTML;
+    // Gera o PDF no próprio navegador a partir do HTML já renderizado
+    // (o mesmo conteúdo usado no botão "Salvar PDF / Imprimir"), depois
+    // envia só o PDF pronto (base64) para o backend encaminhar ao ZapSign.
+    var elemento = $('docContrato');
+    var opcoesPdf = {
+      margin: [10, 10, 10, 10],
+      filename: 'CONT-' + contrato.codigo + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-    // Chamar API do Vercel (que vai gerar o PDF e enviar para ZapSign)
-    fetch('/api/zapsign', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        codigo: contrato.codigo,
-        cliente_razao: contrato.cliente.razao,
-        html: htmlContrato,
-        css: estiloEl ? estiloEl.innerHTML : '',
-        signatarios: signatarios
+    html2pdf().set(opcoesPdf).from(elemento).toPdf().output('datauristring')
+      .then(function (dataUri) {
+        var base64_pdf = dataUri.split(',')[1];
+
+        return fetch('/api/zapsign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            base64_pdf: base64_pdf,
+            nome_documento: 'CONT-' + contrato.codigo + ' - ' + contrato.cliente.razao,
+            signatarios: signatarios
+          })
+        });
       })
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (data.sucesso) {
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.sucesso) throw new Error(data.error || 'Erro ao enviar para ZapSign');
+
         // Armazenar dados da assinatura em localStorage
         var assinaturas = carregarAssinaturas();
         assinaturas[contrato.codigo] = {
@@ -2817,26 +2826,19 @@
 
         toast('✅ Link de assinatura gerado! Abrindo...');
 
-        // Copiar link para clipboard e abrir
         var link = data.link_assinatura;
-        navigator.clipboard.writeText(link).catch(function() {
-          console.log('Não conseguiu copiar link');
-        });
+        navigator.clipboard.writeText(link).catch(function () {});
 
-        // Abrir em nova aba
-        setTimeout(function() {
+        setTimeout(function () {
           window.open(link, '_blank');
         }, 500);
-      } else {
-        throw new Error(data.error || 'Erro ao enviar para ZapSign');
-      }
-    })
-    .catch(function(err) {
-      console.error('Erro:', err);
-      btn.disabled = false;
-      btn.textContent = textOriginal;
-      toast('❌ Erro: ' + err.message);
-    });
+      })
+      .catch(function (err) {
+        console.error('Erro ao enviar para ZapSign:', err);
+        btn.disabled = false;
+        btn.textContent = textOriginal;
+        toast('❌ Erro: ' + err.message);
+      });
   }
 
   function renderListaContratos() {

@@ -1,21 +1,16 @@
 // Função serverless Vercel para integração com ZapSign
-// Gera o PDF a partir do HTML real do contrato (renderizado no navegador do usuário),
-// usando Chrome headless no servidor, para que o PDF fique idêntico ao "Salvar PDF/Imprimir".
-import chromium from '@sparticuz/chromium';
-import puppeteer from 'puppeteer-core';
-
+// O PDF já vem pronto (gerado no navegador do cliente via html2pdf.js),
+// esta função só encaminha para o ZapSign e devolve os links de assinatura.
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
-  let browser;
-
   try {
-    const { codigo, cliente_razao, html, css, signatarios } = req.body;
+    const { base64_pdf, nome_documento, signatarios } = req.body;
     const ZAPSIGN_API_KEY = process.env.ZAPSIGN_API_KEY;
 
-    if (!html || !signatarios) {
+    if (!base64_pdf || !nome_documento || !signatarios) {
       return res.status(400).json({ error: 'Dados incompletos' });
     }
 
@@ -23,49 +18,9 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key não configurada' });
     }
 
-    const paginaCompleta = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    padding: 24px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  }
-  ${css || ''}
-</style>
-</head>
-<body class="print-contrato">
-${html}
-</body>
-</html>`;
-
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless
-    });
-
-    const page = await browser.newPage();
-    await page.setContent(paginaCompleta, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '12mm', bottom: '12mm', left: '10mm', right: '10mm' }
-    });
-
-    await browser.close();
-    browser = null;
-
-    const base64_pdf = pdfBuffer.toString('base64');
-
-    // Criar documento no ZapSign
     // base64_pdf e signers ficam no TOPO do payload (não dentro de "files")
     const payload = {
-      name: `CONT-${codigo || 'S/N'} - ${cliente_razao || 'Cliente'}`,
+      name: nome_documento,
       base64_pdf: base64_pdf,
       signers: signatarios.map(sig => {
         const s = {
@@ -82,6 +37,7 @@ ${html}
       })
     };
 
+    // Endpoint correto: api.zapsign.com.br/api/v1/docs/ (não app.zapsign.com.br)
     const response = await fetch('https://api.zapsign.com.br/api/v1/docs/', {
       method: 'POST',
       headers: {
@@ -110,6 +66,7 @@ ${html}
       });
     }
 
+    // Link de assinatura: cada signatário tem seu próprio sign_url
     const signers = data.signers || [];
     const linkCliente = signers[0] ? signers[0].sign_url : null;
 
@@ -124,9 +81,6 @@ ${html}
 
   } catch (error) {
     console.error('Erro na integração ZapSign:', error);
-    if (browser) {
-      try { await browser.close(); } catch (e) {}
-    }
     return res.status(500).json({
       error: 'Erro interno do servidor',
       mensagem: error.message
