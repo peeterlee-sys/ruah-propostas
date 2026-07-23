@@ -1332,6 +1332,7 @@
       <div>
         <div class="aviso-pendencias" id="avisoPendencias" style="display:none;"></div>
         <div class="doc-contrato" id="docContrato"></div>
+        <div class="hist-lista" id="painelAssinaturas" style="margin-top:22px;"></div>
         <div class="hist-lista hist-contratos" id="listaContratos" style="margin-top:22px;"></div>
       </div>
     </div>
@@ -1799,6 +1800,7 @@
     if (idVista === 'vistaContratos') {
       preencherFormularioContrato();
       renderDocContrato();
+      renderPainelAssinaturas();
       renderListaContratos();
     }
     if (idVista === 'vistaCrm') renderCrm();
@@ -2783,16 +2785,19 @@
     .then(function(data) {
       if (data.sucesso) {
         // Armazenar dados da assinatura em localStorage
-        var assinaturas = JSON.parse(localStorage.getItem('ruah_assinaturas_v1') || '{}');
+        var assinaturas = carregarAssinaturas();
         assinaturas[contrato.codigo] = {
           documento_id: data.documento_id,
           link_assinatura: data.link_assinatura,
+          links_todos: data.links_todos || [],
           status: data.status,
+          signers: signatarios.map(function (s) { return { nome: s.nome, status: 'new' }; }),
           criado_em: data.criado_em,
           contrato_codigo: contrato.codigo,
           cliente_razao: contrato.cliente.razao
         };
-        localStorage.setItem('ruah_assinaturas_v1', JSON.stringify(assinaturas));
+        salvarAssinaturas(assinaturas);
+        renderPainelAssinaturas();
 
         btn.disabled = false;
         btn.textContent = textOriginal;
@@ -2870,6 +2875,162 @@
 
       box.appendChild(div);
     });
+  }
+
+  /* ============================================================
+     ACOMPANHAMENTO DE ASSINATURAS (ZapSign)
+  ============================================================ */
+  var CHAVE_ASSINATURAS = 'ruah_assinaturas_v1';
+
+  function carregarAssinaturas() {
+    try {
+      var o = JSON.parse(armazem.getItem(CHAVE_ASSINATURAS) || '{}');
+      return (o && typeof o === 'object') ? o : {};
+    } catch (e) { return {}; }
+  }
+
+  function salvarAssinaturas(obj) {
+    armazem.setItem(CHAVE_ASSINATURAS, JSON.stringify(obj));
+    agendarSync();
+  }
+
+  function rotuloStatusAssinatura(status) {
+    if (status === 'signed') return { txt: '✅ Assinado', cls: 'verde' };
+    if (status === 'pending') return { txt: '⏳ Aguardando assinatura', cls: 'ouro' };
+    return { txt: status || '—', cls: '' };
+  }
+
+  function renderPainelAssinaturas() {
+    var box = $('painelAssinaturas');
+    if (!box) return;
+    var assinaturas = carregarAssinaturas();
+    var chaves = Object.keys(assinaturas);
+    box.innerHTML = '';
+    if (!chaves.length) return;
+
+    var titulo = document.createElement('h2');
+    titulo.style.cssText = 'color:var(--azul);font-size:16px;margin:6px 0 8px;';
+    titulo.textContent = '✍️ Assinaturas enviadas';
+    box.appendChild(titulo);
+
+    chaves.sort(function (a, b) {
+      return (assinaturas[b].criado_em || '').localeCompare(assinaturas[a].criado_em || '');
+    });
+
+    chaves.forEach(function (codigo) {
+      var a = assinaturas[codigo];
+      var rot = rotuloStatusAssinatura(a.status);
+      var assinantes = (a.signers || []).map(function (s) {
+        var ok = s.status === 'signed';
+        return (ok ? '✅ ' : '◻️ ') + escaparHtml(s.nome || '');
+      }).join(' · ');
+
+      var div = document.createElement('div');
+      div.className = 'hist-item';
+      div.innerHTML =
+        '<div class="info">' +
+          '<div class="codigo">' + escaparHtml(codigo) + (a.criado_em ? ' · ' + new Date(a.criado_em).toLocaleDateString('pt-BR') : '') + '</div>' +
+          '<div class="cliente">' + escaparHtml(a.cliente_razao || '(sem nome)') + '</div>' +
+          '<div class="detalhes">' + (assinantes || 'ZapSign') + '</div>' +
+        '</div>' +
+        '<div class="total"><span class="tag ' + rot.cls + '">' + rot.txt + '</span></div>' +
+        '<div class="hist-acoes">' +
+          '<button class="btn-mini" data-acao="verificar" type="button">🔄 Verificar</button>' +
+          '<button class="btn-mini" data-acao="link" type="button">🔗 Link</button>' +
+          (a.status === 'signed' ? '<button class="btn-mini" data-acao="baixar" type="button">📥 PDF assinado</button>' : '') +
+          '<button class="btn-mini perigo" data-acao="remover" type="button">✕</button>' +
+        '</div>';
+
+      div.querySelector('[data-acao="verificar"]').addEventListener('click', function () {
+        verificarStatusAssinatura(codigo, this);
+      });
+
+      div.querySelector('[data-acao="link"]').addEventListener('click', function () {
+        if (!a.link_assinatura) { toast('Sem link salvo.'); return; }
+        navigator.clipboard.writeText(a.link_assinatura).then(function () {
+          toast('🔗 Link do cliente copiado');
+        }).catch(function () {});
+        window.open(a.link_assinatura, '_blank');
+      });
+
+      var btnBaixar = div.querySelector('[data-acao="baixar"]');
+      if (btnBaixar) {
+        btnBaixar.addEventListener('click', function () {
+          baixarPdfAssinado(codigo, this);
+        });
+      }
+
+      div.querySelector('[data-acao="remover"]').addEventListener('click', function () {
+        if (!window.confirm('Remover ' + codigo + ' do acompanhamento? (não afeta o ZapSign)')) return;
+        var obj = carregarAssinaturas();
+        delete obj[codigo];
+        salvarAssinaturas(obj);
+        renderPainelAssinaturas();
+      });
+
+      box.appendChild(div);
+    });
+  }
+
+  function verificarStatusAssinatura(codigo, btn) {
+    var assinaturas = carregarAssinaturas();
+    var a = assinaturas[codigo];
+    if (!a || !a.documento_id) { toast('Documento sem ID do ZapSign.'); return; }
+
+    var txt = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '⏳...'; }
+
+    fetch('/api/zapsign-status?doc_id=' + encodeURIComponent(a.documento_id))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (btn) { btn.disabled = false; btn.textContent = txt; }
+        if (!data.sucesso) { throw new Error(data.error || 'Erro ao consultar'); }
+
+        var obj = carregarAssinaturas();
+        if (!obj[codigo]) return;
+        var antes = obj[codigo].status;
+        obj[codigo].status = data.status;
+        obj[codigo].signers = data.signers || obj[codigo].signers;
+        if (data.signed_file) obj[codigo].signed_file = data.signed_file;
+        salvarAssinaturas(obj);
+        renderPainelAssinaturas();
+
+        if (data.status === 'signed' && antes !== 'signed') {
+          toast('🎉 ' + codigo + ' foi assinado por todos!');
+        } else if (data.status === 'signed') {
+          toast('✅ ' + codigo + ': assinado');
+        } else {
+          toast('⏳ ' + codigo + ': ainda aguardando assinatura');
+        }
+      })
+      .catch(function (err) {
+        if (btn) { btn.disabled = false; btn.textContent = txt; }
+        toast('❌ ' + err.message);
+      });
+  }
+
+  function baixarPdfAssinado(codigo, btn) {
+    // O link do signed_file expira em 60min, então buscamos um fresco ao clicar
+    var assinaturas = carregarAssinaturas();
+    var a = assinaturas[codigo];
+    if (!a || !a.documento_id) { toast('Documento sem ID.'); return; }
+
+    var txt = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '⏳...'; }
+
+    fetch('/api/zapsign-status?doc_id=' + encodeURIComponent(a.documento_id))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (btn) { btn.disabled = false; btn.textContent = txt; }
+        if (!data.sucesso) { throw new Error(data.error || 'Erro'); }
+        if (!data.signed_file) { toast('PDF assinado ainda não disponível.'); return; }
+        window.open(data.signed_file, '_blank');
+        toast('📥 Abrindo PDF assinado de ' + codigo);
+      })
+      .catch(function (err) {
+        if (btn) { btn.disabled = false; btn.textContent = txt; }
+        toast('❌ ' + err.message);
+      });
   }
 
   /* ============================================================
