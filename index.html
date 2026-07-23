@@ -2751,10 +2751,15 @@
       return;
     }
 
+    // Garante que o contrato tem um código definitivo e está salvo
+    // (o mesmo código que aparece no documento enviado para assinatura)
+    salvarContratoAtual();
+    renderDocContrato();
+
     var btn = $('btnEnviarZapsign');
     var textOriginal = btn.textContent;
     btn.disabled = true;
-    btn.textContent = '⏳ Enviando para ZapSign...';
+    btn.textContent = '⏳ Gerando PDF e enviando...';
 
     // Dados dos assinantes (dados da Ruah vêm da variável global "empresa", não de "contrato")
     var signatarios = [
@@ -2770,6 +2775,11 @@
       }
     ];
 
+    // Envia o HTML real do contrato (o mesmo exibido em tela / usado no "Salvar PDF")
+    // + o CSS da página, para o servidor renderizar um PDF idêntico via Chrome headless.
+    var estiloEl = document.querySelector('style');
+    var htmlContrato = $('docContrato').outerHTML;
+
     // Chamar API do Vercel (que vai gerar o PDF e enviar para ZapSign)
     fetch('/api/zapsign', {
       method: 'POST',
@@ -2777,7 +2787,10 @@
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        contrato: contrato,
+        codigo: contrato.codigo,
+        cliente_razao: contrato.cliente.razao,
+        html: htmlContrato,
+        css: estiloEl ? estiloEl.innerHTML : '',
         signatarios: signatarios
       })
     })

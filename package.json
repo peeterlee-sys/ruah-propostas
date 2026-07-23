@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Sistema de gerador de propostas, contratos e CRM para Ruah",
   "dependencies": {
-    "pdfkit": "^0.13.0"
+    "@sparticuz/chromium": "^123.0.0",
+    "puppeteer-core": "^23.0.0"
   },
   "engines": {
     "node": "24.x"

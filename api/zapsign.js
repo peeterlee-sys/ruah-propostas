@@ -1,16 +1,21 @@
 // Função serverless Vercel para integração com ZapSign
-import PDFDocument from 'pdfkit';
+// Gera o PDF a partir do HTML real do contrato (renderizado no navegador do usuário),
+// usando Chrome headless no servidor, para que o PDF fique idêntico ao "Salvar PDF/Imprimir".
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
+  let browser;
+
   try {
-    const { contrato, signatarios } = req.body;
+    const { codigo, cliente_razao, html, css, signatarios } = req.body;
     const ZAPSIGN_API_KEY = process.env.ZAPSIGN_API_KEY;
 
-    if (!contrato || !signatarios) {
+    if (!html || !signatarios) {
       return res.status(400).json({ error: 'Dados incompletos' });
     }
 
@@ -18,16 +23,49 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key não configurada' });
     }
 
-    // Gerar PDF usando PDFKit
-    const pdfBuffer = await gerarPdfContrato(contrato);
+    const paginaCompleta = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  ${css || ''}
+</style>
+</head>
+<body class="print-contrato">
+${html}
+</body>
+</html>`;
 
-    // Converter buffer para base64
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(paginaCompleta, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '12mm', bottom: '12mm', left: '10mm', right: '10mm' }
+    });
+
+    await browser.close();
+    browser = null;
+
     const base64_pdf = pdfBuffer.toString('base64');
 
     // Criar documento no ZapSign
     // base64_pdf e signers ficam no TOPO do payload (não dentro de "files")
     const payload = {
-      name: `CONT-${contrato.codigo} - ${contrato.cliente.razao}`,
+      name: `CONT-${codigo || 'S/N'} - ${cliente_razao || 'Cliente'}`,
       base64_pdf: base64_pdf,
       signers: signatarios.map(sig => {
         const s = {
@@ -44,7 +82,6 @@ export default async function handler(req, res) {
       })
     };
 
-    // Endpoint correto: api.zapsign.com.br/api/v1/docs/
     const response = await fetch('https://api.zapsign.com.br/api/v1/docs/', {
       method: 'POST',
       headers: {
@@ -54,7 +91,6 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload)
     });
 
-    // Lê como texto primeiro para não quebrar se vier HTML
     const raw = await response.text();
     let data;
     try {
@@ -74,11 +110,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Link de assinatura: cada signatário tem seu próprio sign_url
     const signers = data.signers || [];
     const linkCliente = signers[0] ? signers[0].sign_url : null;
 
-    // Retornar dados de sucesso
     return res.status(200).json({
       sucesso: true,
       documento_id: data.token,
@@ -90,65 +124,12 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Erro na integração ZapSign:', error);
+    if (browser) {
+      try { await browser.close(); } catch (e) {}
+    }
     return res.status(500).json({
       error: 'Erro interno do servidor',
       mensagem: error.message
     });
   }
-}
-
-function gerarPdfContrato(contrato) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    const doc = new PDFDocument();
-
-    doc.on('data', chunk => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
-
-    // Cabeçalho
-    doc.fontSize(18).font('Helvetica-Bold').text('CONTRATO DE VEICULAÇÃO', { align: 'center' });
-    doc.fontSize(14).font('Helvetica').text('DE PUBLICIDADE EM PAINEL ELETRÔNICO DE LED', { align: 'center' });
-    doc.moveDown();
-    doc.fontSize(10).text(`Código: ${contrato.codigo}`, { align: 'center' });
-    doc.moveDown();
-
-    // Seção Cliente
-    doc.fontSize(12).font('Helvetica-Bold').text('DADOS DO CLIENTE');
-    doc.fontSize(10).font('Helvetica');
-    doc.text(`Razão Social: ${contrato.cliente.razao || 'N/A'}`);
-    doc.text(`CNPJ/CPF: ${contrato.cliente.doc || 'N/A'}`);
-    doc.text(`Contato: ${contrato.cliente.representante || 'N/A'}`);
-    doc.text(`Email: ${contrato.cliente.email || 'N/A'}`);
-    doc.text(`Telefone: ${contrato.cliente.telefone || 'N/A'}`);
-    doc.moveDown();
-
-    // Seção Contrato
-    doc.fontSize(12).font('Helvetica-Bold').text('DADOS DO CONTRATO');
-    doc.fontSize(10).font('Helvetica');
-    doc.text(`Período: ${contrato.meses} meses`);
-    doc.text(`Valor Mensal: R$ ${(contrato.mensal || 0).toFixed(2)}`);
-    doc.text(`Valor Total: R$ ${(contrato.total || 0).toFixed(2)}`);
-    doc.text(`Início: ${contrato.inicio || 'N/A'}`);
-    doc.text(`Término: ${contrato.fim || 'N/A'}`);
-    doc.moveDown();
-
-    // Seção Itens
-    doc.fontSize(12).font('Helvetica-Bold').text('ITENS CONTRATADOS');
-    doc.fontSize(9).font('Helvetica');
-    if (contrato.itens && contrato.itens.length > 0) {
-      contrato.itens.forEach(item => {
-        doc.text(`• ${item.nome || 'N/A'} - R$ ${(item.valor || 0).toFixed(2)}`);
-      });
-    } else {
-      doc.text('Nenhum item contratado');
-    }
-    doc.moveDown(2);
-
-    // Rodapé
-    doc.fontSize(10).font('Helvetica-Oblique').text('Assinado digitalmente via ZapSign', { align: 'center' });
-    doc.text('Este contrato foi assinado digitalmente e tem validade legal.', { align: 'center' });
-
-    doc.end();
-  });
 }
