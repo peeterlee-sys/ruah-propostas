@@ -1,0 +1,11 @@
+{
+  "name": "ruah-propostas",
+  "version": "1.0.0",
+  "description": "Sistema de gerador de propostas, contratos e CRM para Ruah",
+  "dependencies": {
+    "html-pdf": "^3.0.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
