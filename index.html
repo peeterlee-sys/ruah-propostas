@@ -2756,7 +2756,7 @@
     btn.disabled = true;
     btn.textContent = '⏳ Enviando para ZapSign...';
 
-    // Dados dos assinantes
+    // Dados dos assinantes (dados da Ruah vêm da variável global "empresa", não de "contrato")
     var signatarios = [
       {
         nome: contrato.cliente.representante || contrato.cliente.razao,
@@ -2764,9 +2764,9 @@
         telefone: contrato.cliente.telefone || ''
       },
       {
-        nome: contrato.empresa.responsavel || 'Ruah Publicidade',
-        email: contrato.empresa.email || 'adm@ruahled.com.br',
-        telefone: contrato.empresa.telefone || ''
+        nome: empresa.respNome || 'Ruah Publicidade',
+        email: 'adm@ruahled.com.br',
+        telefone: ''
       }
     ];
 
