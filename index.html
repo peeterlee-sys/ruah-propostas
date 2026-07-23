@@ -2479,6 +2479,7 @@
     contrato.cliente.razao = snapshot.cliente || '';
     contrato.cliente.doc = snapshot.cnpj || '';
     contrato.cliente.representante = snapshot.contato || '';
+    contrato.cliente.telefone = snapshot.telefone || '';
     contrato.inicio = snapshot.inicio || '';
     contrato.meses = t.meses;
     contrato.parcelas = t.parcelas;
@@ -2493,6 +2494,7 @@
     if (cliBase) {
       if (!contrato.cliente.doc && cliBase.doc) contrato.cliente.doc = cliBase.doc;
       if (!contrato.cliente.representante && cliBase.contato) contrato.cliente.representante = cliBase.contato;
+      if (!contrato.cliente.telefone && cliBase.telefone) contrato.cliente.telefone = cliBase.telefone;
       contrato.cliente.email = cliBase.email || contrato.cliente.email;
       contrato.cliente.logradouro = cliBase.logradouro || '';
       contrato.cliente.numero = cliBase.numero || '';
@@ -2816,7 +2818,8 @@
           signers: signatarios.map(function (s) { return { nome: s.nome, status: 'new' }; }),
           criado_em: data.criado_em,
           contrato_codigo: contrato.codigo,
-          cliente_razao: contrato.cliente.razao
+          cliente_razao: contrato.cliente.razao,
+          cliente_telefone: contrato.cliente.telefone || ''
         };
         salvarAssinaturas(assinaturas);
         renderPainelAssinaturas();
@@ -2952,6 +2955,8 @@
         '<div class="hist-acoes">' +
           '<button class="btn-mini" data-acao="verificar" type="button">🔄 Verificar</button>' +
           '<button class="btn-mini" data-acao="link" type="button">🔗 Link</button>' +
+          (a.cliente_telefone ? '<button class="btn-mini" data-acao="whats" type="button">📱 WhatsApp</button>' : '') +
+          '<button class="btn-mini" data-acao="linkRuah" type="button">🏢 Link Ruah</button>' +
           (a.status === 'signed' ? '<button class="btn-mini" data-acao="baixar" type="button">📥 PDF assinado</button>' : '') +
           '<button class="btn-mini perigo" data-acao="remover" type="button">✕</button>' +
         '</div>';
@@ -2966,6 +2971,29 @@
           toast('🔗 Link do cliente copiado');
         }).catch(function () {});
         window.open(a.link_assinatura, '_blank');
+      });
+
+      var btnWhats = div.querySelector('[data-acao="whats"]');
+      if (btnWhats) {
+        btnWhats.addEventListener('click', function () {
+          if (!a.link_assinatura) { toast('Sem link salvo.'); return; }
+          var fone = String(a.cliente_telefone || '').replace(/\D/g, '');
+          if (fone && fone.length <= 11) fone = '55' + fone;
+          var msg = 'Olá! Segue o link para assinatura digital do contrato ' + codigo + ' da Ruah:\n' + a.link_assinatura;
+          window.open('https://wa.me/' + fone + '?text=' + encodeURIComponent(msg), '_blank');
+        });
+      }
+
+      div.querySelector('[data-acao="linkRuah"]').addEventListener('click', function () {
+        var linkRuah = null;
+        (a.links_todos || []).forEach(function (l) {
+          if (l.sign_url !== a.link_assinatura) linkRuah = l.sign_url;
+        });
+        if (!linkRuah) { toast('Link da Ruah não encontrado.'); return; }
+        navigator.clipboard.writeText(linkRuah).then(function () {
+          toast('🏢 Link da Ruah copiado');
+        }).catch(function () {});
+        window.open(linkRuah, '_blank');
       });
 
       var btnBaixar = div.querySelector('[data-acao="baixar"]');
