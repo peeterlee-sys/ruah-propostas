@@ -3361,6 +3361,11 @@
     card.etapa = novaEtapa;
     card.movidoEm = new Date().toISOString();
     card.atualizadoEm = card.movidoEm;
+    // negócio fechado ou perdido não precisa mais de follow-up pendente
+    if (novaEtapa === 'fechado' || novaEtapa === 'perdido') {
+      card.lembreteEm = '';
+      card.lembreteNota = '';
+    }
   }
 
   /* alimentação automática: proposta salva -> card no funil */
@@ -3552,7 +3557,7 @@
             '⏱️ nesta etapa ' + diasAtras(card.movidoEm) +
           '</div>' +
           (card.notas ? '<div class="notas">📝 ' + escaparHtml(card.notas) + '</div>' : '') +
-          (card.lembreteEm ? '<div class="lembrete' + (lembreteVencido(card) ? ' vencido' : '') + '">🔔 ' + fmtLembrete(card.lembreteEm) + (card.lembreteNota ? ' — ' + escaparHtml(card.lembreteNota) : '') + '</div>' : '') +
+          ((card.lembreteEm && card.etapa !== 'fechado' && card.etapa !== 'perdido') ? '<div class="lembrete' + (lembreteVencido(card) ? ' vencido' : '') + '">🔔 ' + fmtLembrete(card.lembreteEm) + (card.lembreteNota ? ' — ' + escaparHtml(card.lembreteNota) : '') + '</div>' : '') +
           '<div class="tags">' + tags.join('') + '</div>' +
           '<div class="acoes-card">' +
             (idxEtapa > 0 ? '<button class="btn-icone" data-acao="voltar" title="Etapa anterior" type="button">◀</button>' : '') +
