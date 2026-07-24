@@ -2439,6 +2439,11 @@
     return partes.join(' e ');
   }
 
+  function extensoFeminino(n) {
+    // ajusta gênero para concordar com "parcela(s)": um→uma, dois→duas (inclusive em compostos)
+    return extensoInteiro(n).replace(/\bum\b/g, 'uma').replace(/\bdois\b/g, 'duas');
+  }
+
   function valorPorExtenso(v) {
     v = Math.round(Number(v || 0) * 100) / 100;
     var reais = Math.floor(v);
@@ -2566,6 +2571,25 @@
     return faltas;
   }
 
+  // Descreve a forma de pagamento real do contrato: parcela única, mensalidade
+  // (parcelas = meses) ou parcelamento diferente da duração (ex.: 5 meses de
+  // contrato pagos em 2x), evitando dizer "valor mensal" quando não é o caso.
+  function textoClausulaValor(c) {
+    var parcelas = parseInt(c.parcelas, 10) || 1;
+    var meses = parseInt(c.meses, 10) || 1;
+
+    if (parcelas <= 1) {
+      return 'A CONTRATANTE pagará à CONTRATADA o valor total de <strong>' + moeda(c.total) + '</strong> (' + valorPorExtenso(c.total) + '), em parcela única, mediante boleto bancário enviado pela CONTRATADA, com vencimento na data acordada entre as partes.';
+    }
+
+    if (parcelas === meses) {
+      return 'A CONTRATANTE pagará à CONTRATADA o valor mensal de <strong>' + moeda(c.mensal) + '</strong> (' + valorPorExtenso(c.mensal) + ')' + (c.total > 0 ? ', totalizando ' + moeda(c.total) + ' (' + valorPorExtenso(c.total) + ') no período contratado' : '') + ', mediante boleto bancário enviado pela CONTRATADA, sendo o primeiro vencimento na data acordada entre as partes.';
+    }
+
+    var valorParcela = c.total / parcelas;
+    return 'A CONTRATANTE pagará à CONTRATADA o valor total de <strong>' + moeda(c.total) + '</strong> (' + valorPorExtenso(c.total) + '), em ' + parcelas + ' (' + extensoFeminino(parcelas) + ') parcelas de <strong>' + moeda(valorParcela) + '</strong> (' + valorPorExtenso(valorParcela) + ') cada, mediante boleto bancário enviado pela CONTRATADA, sendo o primeiro vencimento na data acordada entre as partes.';
+  }
+
   function renderDocContrato() {
     var n = 0;
     var nSub = 0;
@@ -2603,7 +2627,7 @@
       sub('O presente contrato terá duração de ' + contrato.meses + ' (' + extensoInteiro(contrato.meses) + ') ' + (contrato.meses === 1 ? 'mês' : 'meses') + ', com início em ' + campo(dataBR(contrato.inicio) !== '-' ? dataBR(contrato.inicio) : '', 'Data de início') + ' e término em ' + campo(dataBR(contrato.fim) !== '-' ? dataBR(contrato.fim) : '', 'Data de término') + ', podendo ser renovado por igual período mediante prévia e expressa manifestação das partes.') +
 
       clausula('Do Valor') +
-      sub('A CONTRATANTE pagará à CONTRATADA o valor mensal de <strong>' + moeda(contrato.mensal) + '</strong> (' + valorPorExtenso(contrato.mensal) + ')' + (contrato.total > 0 ? ', totalizando ' + moeda(contrato.total) + ' (' + valorPorExtenso(contrato.total) + ') no período contratado' : '') + ', mediante boleto bancário enviado pela CONTRATADA, sendo o primeiro vencimento na data acordada entre as partes.') +
+      sub(textoClausulaValor(contrato)) +
       sub('O boleto e a nota fiscal referentes a este contrato serão enviados à CONTRATANTE para o seguinte endereço eletrônico: ' + campo(cli.email, 'E-mail do cliente') + '.') +
 
       clausula('Das Obrigações') +
