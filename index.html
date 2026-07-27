@@ -1964,7 +1964,7 @@
     var c = calcular();
     $('blocoTotais').innerHTML =
       '<div class="linha-total"><span>Subtotal mensal</span><span>' + moeda(c.subtotal) + '</span></div>' +
-      (c.desconto > 0 ? '<div class="linha-total"><span>Desconto</span><span>− ' + moeda(c.desconto) + '</span></div>' : '') +
+      (c.desconto > 0 ? '<div class="linha-total"><span>Desconto</span><span>−&nbsp;' + moeda(c.desconto) + '</span></div>' : '') +
       '<div class="linha-total"><span>Investimento mensal</span><span>' + moeda(c.mensal) + '</span></div>' +
       '<div class="linha-total"><span>Impactos estimados/mês</span><span>' + numeroBR(c.impactos) + '</span></div>' +
       '<div class="linha-total destaque"><span>Total do contrato (' + rotuloPeriodo() + ')</span><span>' + moeda(c.totalContrato) + '</span></div>' +
@@ -2065,7 +2065,7 @@
           '<tfoot>' +
             (c.desconto > 0
               ? '<tr><td colspan="3">Subtotal mensal</td><td class="valor">' + moeda(c.subtotal) + '</td></tr>' +
-                '<tr><td colspan="3">Desconto comercial</td><td class="valor">− ' + moeda(c.desconto) + '</td></tr>'
+                '<tr><td colspan="3">Desconto comercial</td><td class="valor">−&nbsp;' + moeda(c.desconto) + '</td></tr>'
               : '') +
             '<tr><td colspan="3">Investimento mensal</td><td class="valor">' + moeda(c.mensal) + '</td></tr>' +
             '<tr><td colspan="3">Total do contrato · ' + rotuloPeriodo() + '</td><td class="valor">' + moeda(c.totalContrato) + '</td></tr>' +
