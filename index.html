@@ -1150,6 +1150,7 @@
     <button class="aba" data-vista="vistaContratos" type="button">📑 Contratos</button>
     <button class="aba" data-vista="vistaCrm" type="button">🎯 CRM</button>
     <button class="aba" data-vista="vistaClientes" type="button">👥 Clientes</button>
+    <button class="aba" id="btnAbrirPontos" type="button">🗺️ Pontos</button>
   </nav>
 </header>
 
@@ -4051,10 +4052,15 @@
   ============================================================ */
   function registrarEventos() {
     document.querySelectorAll('.aba').forEach(function (aba) {
+      if (!aba.getAttribute('data-vista')) return; // botões como "Pontos" abrem página própria, não trocam de vista
       aba.addEventListener('click', function () {
         lerFormularioSeguro();
         trocarVista(aba.getAttribute('data-vista'));
       });
+    });
+
+    $('btnAbrirPontos').addEventListener('click', function () {
+      window.open('pontos', '_blank');
     });
 
     document.querySelectorAll('#chipsCategoria .chip').forEach(function (chip) {
