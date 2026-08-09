@@ -25,8 +25,10 @@
     --verde-claro: #e3f5ee;
     --vermelho: #b3261e;
     --vermelho-claro: #fdeceb;
-    --sombra: 0 10px 30px rgba(20, 36, 62, 0.10);
-    --radius: 18px;
+    --sombra: 0 1px 3px rgba(20, 36, 62, 0.05);
+    --sombra-hover: 0 6px 20px rgba(20, 36, 62, 0.10);
+    --borda-card: 1px solid rgba(20, 36, 62, 0.07);
+    --radius: 16px;
   }
 
   * { box-sizing: border-box; }
@@ -40,32 +42,107 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ===================== TOPO ===================== */
-  .topo {
-    background: linear-gradient(135deg, var(--azul), var(--azul-escuro));
-    color: white;
-    padding: 20px 28px 0;
-  }
+  /* ===================== SHELL (sidebar + header) ===================== */
+  .app-shell { display: flex; height: 100vh; overflow: hidden; }
 
-  .topo-linha {
+  .sidebar {
+    width: 240px;
+    flex: none;
+    background: linear-gradient(180deg, var(--azul), var(--azul-escuro));
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    transition: width .2s ease;
+    overflow: hidden;
+  }
+
+  .sidebar.recolhida { width: 72px; }
+
+  .sidebar-head { padding: 24px 20px 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+
+  .logo-sidebar { height: 24px; display: block; }
+  .sidebar.recolhida .logo-sidebar { display: none; }
+
+  .abas {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 10px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .aba {
+    display: flex;
     align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    max-width: 1440px;
-    margin: 0 auto;
+    gap: 12px;
+    background: transparent;
+    border: 0;
+    color: rgba(255,255,255,.62);
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 11px 12px;
+    cursor: pointer;
+    border-radius: 9px;
+    white-space: nowrap;
+    text-align: left;
+    width: 100%;
   }
 
-  .marca { display: flex; align-items: center; gap: 14px; }
+  .aba svg { flex: none; }
+  .aba .aba-label { overflow: hidden; text-overflow: ellipsis; }
+  .sidebar.recolhida .aba .aba-label { display: none; }
+  .sidebar.recolhida .aba { justify-content: center; padding: 11px; }
 
-  .logo-img {
-    height: 26px;
-    display: block;
-    margin-bottom: 6px;
+  .aba:hover { color: white; background: rgba(255,255,255,.06); }
+
+  .aba.ativa { background: rgba(224,195,137,.16); color: var(--dourado); }
+
+  .aba .contador {
+    margin-left: auto;
+    background: var(--dourado);
+    color: var(--azul);
+    border-radius: 999px;
+    font-size: 11px;
+    padding: 1px 8px;
+    font-weight: 800;
+  }
+  .sidebar.recolhida .aba .contador { display: none; }
+
+  .sidebar-foot { padding: 10px 10px 18px; border-top: 1px solid rgba(255,255,255,.08); }
+
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    color: rgba(255,255,255,.5);
+    cursor: pointer;
+  }
+  .sidebar-toggle:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .sidebar-toggle svg { flex: none; transition: transform .2s ease; }
+  .sidebar.recolhida .sidebar-toggle svg { transform: rotate(180deg); }
+  .sidebar.recolhida .sidebar-toggle { justify-content: center; }
+  .sidebar.recolhida .sidebar-toggle .aba-label { display: none; }
+
+  .app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; }
+
+  .topo-fixo {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 26px 32px 20px;
+    background: var(--fundo);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    border-bottom: 1px solid rgba(20,36,62,.07);
   }
 
-  .marca small { display: block; color: #b9c6d8; font-size: 12.5px; margin-top: 2px; }
+  .topo-fixo h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.02em; color: var(--azul); }
+  .topo-fixo p { margin: 5px 0 0; font-size: 13px; color: rgba(20,36,62,.52); }
 
   .badge-slogan {
     background: var(--dourado);
@@ -97,49 +174,6 @@
   .dica-sync ol { margin: 6px 0 0 18px; padding: 0; }
   .dica-sync li { margin: 3px 0; }
 
-  .abas {
-    display: flex;
-    gap: 4px;
-    max-width: 1440px;
-    margin: 18px auto 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .abas::-webkit-scrollbar { display: none; }
-
-  .aba {
-    background: transparent;
-    border: 0;
-    color: #b9c6d8;
-    font-size: 14.5px;
-    font-weight: 600;
-    padding: 12px 20px;
-    cursor: pointer;
-    border-radius: 12px 12px 0 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .aba:hover { color: white; }
-
-  .aba.ativa {
-    background: var(--fundo);
-    color: var(--azul);
-  }
-
-  .aba .contador {
-    background: var(--dourado);
-    color: var(--azul);
-    border-radius: 999px;
-    font-size: 11.5px;
-    padding: 1px 8px;
-    font-weight: 800;
-  }
-
   main { max-width: 1440px; margin: 0 auto; padding: 24px 28px 120px; }
 
   .vista { display: none; }
@@ -157,7 +191,7 @@
   .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 
   .chip {
-    border: 1px solid #d3dbe6;
+    border: 1px solid rgba(20,36,62,.12);
     background: white;
     color: var(--azul);
     padding: 9px 16px;
@@ -182,7 +216,7 @@
   .busca input {
     width: 100%;
     padding: 11px 14px 11px 40px;
-    border: 1px solid #d3dbe6;
+    border: 1px solid rgba(20,36,62,.12);
     border-radius: 999px;
     font-size: 14px;
     outline: none;
@@ -227,12 +261,12 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    border: 2px solid transparent;
-    transition: transform .15s ease, border-color .15s ease;
+    border: var(--borda-card);
+    transition: box-shadow .15s ease, border-color .15s ease;
   }
 
-  .card-ponto:hover { transform: translateY(-3px); }
-  .card-ponto.selecionado { border-color: var(--dourado); }
+  .card-ponto:hover { box-shadow: var(--sombra-hover); }
+  .card-ponto.selecionado { border-color: var(--dourado); border-width: 2px; }
 
   .card-topo {
     background: linear-gradient(135deg, var(--azul), var(--azul-escuro));
@@ -242,8 +276,8 @@
   }
 
   .card-topo .tipo {
-    font-size: 11px;
-    letter-spacing: 1.2px;
+    font-size: 10.5px;
+    letter-spacing: .13em;
     text-transform: uppercase;
     color: var(--dourado);
     font-weight: 700;
@@ -276,7 +310,7 @@
   .specs { display: flex; gap: 8px; flex-wrap: wrap; }
 
   .spec {
-    background: #f2f5f9;
+    background: var(--fundo);
     border-radius: 8px;
     padding: 4px 10px;
     font-size: 12px;
@@ -376,17 +410,18 @@
     background: white;
     border-radius: var(--radius);
     box-shadow: var(--sombra);
+    border: var(--borda-card);
     padding: 24px;
   }
 
-  .card h2 { margin: 0 0 18px; color: var(--azul); font-size: 18px; }
+  .card h2 { margin: 0 0 18px; color: var(--azul); font-size: 19px; font-weight: 700; }
 
-  label { font-size: 12.5px; font-weight: 700; color: var(--azul); display: block; margin-bottom: 6px; }
+  label { font-size: 12px; font-weight: 700; color: var(--azul); display: block; margin-bottom: 6px; }
 
   input, select, textarea {
     width: 100%;
     padding: 11px 13px;
-    border: 1px solid #d8dee9;
+    border: 1px solid rgba(20,36,62,.14);
     border-radius: 11px;
     font-size: 14px;
     margin-bottom: 14px;
@@ -410,8 +445,8 @@
     grid-template-columns: 1fr 130px 36px;
     gap: 10px;
     align-items: center;
-    background: #f8fafc;
-    border: 1px solid var(--linha);
+    background: var(--fundo);
+    border: var(--borda-card);
     border-radius: 14px;
     padding: 12px 14px;
   }
@@ -489,7 +524,7 @@
     color: var(--muted);
     font-style: italic;
     font-size: 13.5px;
-    background: #f8fafc;
+    background: var(--fundo);
     border: 1px dashed #cfd9e6;
     border-radius: 14px;
     padding: 22px;
@@ -557,7 +592,7 @@
   }
 
   .metrica {
-    background: #f8fafc;
+    background: var(--fundo);
     border: 1px solid var(--linha);
     border-radius: 15px;
     padding: 16px;
@@ -602,7 +637,7 @@
   .doc-tabela tfoot td {
     font-weight: 800;
     color: var(--azul);
-    background: #f8fafc;
+    background: var(--fundo);
     font-size: 14px;
   }
 
@@ -614,7 +649,7 @@
     grid-template-columns: 170px 1fr auto;
     gap: 16px;
     align-items: center;
-    background: #f8fafc;
+    background: var(--fundo);
     border: 1px solid var(--linha);
     border-radius: 14px;
     padding: 14px;
@@ -655,6 +690,10 @@
     .ponto-card, .ponto-card.sem-foto { grid-template-columns: 1fr; }
     .ponto-card .ponto-foto { width: 100%; height: 160px; }
     .ponto-card .ponto-valor { text-align: left; }
+    .grade { grid-template-columns: 1fr; }
+    .row2 { grid-template-columns: 1fr; }
+    .item-prop { grid-template-columns: 1fr; }
+    .topo-fixo { flex-wrap: wrap; }
   }
 
   .caixa-destaque {
@@ -675,7 +714,7 @@
   }
 
   .condicao {
-    background: #f8fafc;
+    background: var(--fundo);
     border: 1px solid var(--linha);
     border-radius: 13px;
     padding: 14px 16px;
@@ -709,12 +748,15 @@
     background: white;
     border-radius: 16px;
     box-shadow: var(--sombra);
+    border: var(--borda-card);
     padding: 18px 22px;
     display: flex;
     align-items: center;
     gap: 18px;
     flex-wrap: wrap;
+    transition: box-shadow .15s ease;
   }
+  .hist-item:hover { box-shadow: var(--sombra-hover); }
 
   .hist-item .info { flex: 1; min-width: 220px; }
   .hist-item .codigo { font-size: 12px; color: var(--dourado-escuro); font-weight: 800; letter-spacing: 1px; }
@@ -726,7 +768,7 @@
   .hist-acoes { display: flex; gap: 8px; }
 
   .btn-mini {
-    border: 1px solid #d3dbe6;
+    border: 1px solid rgba(20,36,62,.14);
     background: white;
     color: var(--azul);
     border-radius: 10px;
@@ -803,7 +845,10 @@
     .doc-contrato { padding: 26px 22px; }
     .metricas, .condicoes { grid-template-columns: repeat(2, 1fr); }
     main { padding: 18px 16px 130px; }
-    .topo { padding: 16px 16px 0; }
+    .sidebar { width: 72px; }
+    .sidebar .aba-label, .sidebar .logo-sidebar { display: none; }
+    .sidebar-head { padding: 20px 12px; }
+    .topo-fixo { padding: 16px 16px 14px; }
     .doc-capa, .doc-corpo { padding-left: 26px; padding-right: 26px; }
     .doc-capa .logo-capa { right: 26px; top: 30px; height: 24px; }
     .doc-capa h1 { padding-right: 0; margin-top: 40px; }
@@ -875,12 +920,12 @@
   .card-crm .valor { font-size: 15px; font-weight: 800; color: var(--azul); margin: 4px 0 2px; }
   .card-crm .valor small { font-weight: 400; color: var(--muted); font-size: 11px; }
   .card-crm .meta { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
-  .card-crm .notas { font-size: 11.5px; color: var(--texto); background: #f8fafc; border-radius: 8px; padding: 6px 8px; margin-top: 6px; line-height: 1.45; }
+  .card-crm .notas { font-size: 11.5px; color: var(--texto); background: var(--fundo); border-radius: 8px; padding: 6px 8px; margin-top: 6px; line-height: 1.45; }
 
   .card-crm .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
 
   .tag {
-    background: #f0f4f9;
+    background: var(--fundo);
     color: var(--azul);
     font-size: 10.5px;
     font-weight: 700;
@@ -900,7 +945,7 @@
   }
 
   .btn-icone {
-    background: #f0f4f9;
+    background: var(--fundo);
     border: 0;
     border-radius: 8px;
     padding: 5px 9px;
@@ -947,7 +992,7 @@
   }
 
   .tarefa-linha:last-child { border-bottom: 0; }
-  .tarefa-linha:hover { background: #f8fafc; }
+  .tarefa-linha:hover { background: var(--fundo); }
   .tarefa-hora { font-weight: 800; color: var(--azul); white-space: nowrap; min-width: 96px; }
   .tarefa-hora.vencida { color: var(--vermelho); }
   .tarefa-info strong { color: var(--azul); }
@@ -962,7 +1007,8 @@
   }
 
   .form-secao {
-    border: 1px solid var(--linha);
+    background: var(--fundo);
+    border: var(--borda-card);
     border-radius: 14px;
     padding: 14px 16px 2px;
     margin-bottom: 16px;
@@ -1090,7 +1136,9 @@
   @media print {
     @page { size: A4; margin: 0; }
     body { background: white; }
-    .topo, .doc-acoes, .barra-carrinho, .toast { display: none !important; }
+    .sidebar, .topo-fixo, .doc-acoes, .barra-carrinho, .toast { display: none !important; }
+    .app-shell { display: block !important; height: auto !important; overflow: visible !important; }
+    .app-main { overflow: visible !important; }
     main { padding: 0; max-width: none; }
     .vista { display: none !important; }
     #vistaDoc { display: block !important; }
@@ -1129,30 +1177,65 @@
 </head>
 <body>
 
-<header class="topo">
-  <div class="topo-linha">
-    <div class="marca">
-      <div>
-        <img id="logoTopo" class="logo-img" alt="RUAH" />
-        <small>Gerador de Propostas · Mídia OOH &amp; DOOH · Balneário Camboriú</small>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <img id="logoSidebar" class="logo-sidebar" alt="RUAH" />
+    </div>
+    <nav class="abas">
+      <button class="aba ativa" data-vista="vistaCatalogo" type="button" title="Catálogo">
+        <svg width="17" height="17" viewBox="0 0 18 18"><rect x="1.5" y="2.5" width="15" height="10" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="7" y="14.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg>
+        <span class="aba-label">Catálogo</span>
+      </button>
+      <button class="aba" data-vista="vistaProposta" type="button" title="Montar proposta">
+        <svg width="17" height="17" viewBox="0 0 18 18"><circle cx="6" cy="15" r="1.5" fill="currentColor"/><circle cx="13" cy="15" r="1.5" fill="currentColor"/><path d="M1.5 2h2.2l2.3 9h8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5.4 4.5h11l-1.6 4.8H6.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span class="aba-label">Montar proposta</span>
+        <span class="contador" id="contadorItens" style="display:none;">0</span>
+      </button>
+      <button class="aba" data-vista="vistaDoc" type="button" title="Visualizar">
+        <svg width="17" height="17" viewBox="0 0 18 18"><path d="M3 3.5h8.5L15 7v7.5H3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M5.6 9.5h6.8M5.6 12h4.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span class="aba-label">Visualizar</span>
+      </button>
+      <button class="aba" data-vista="vistaHistorico" type="button" title="Histórico">
+        <svg width="17" height="17" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 5.2V9l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="aba-label">Histórico</span>
+      </button>
+      <button class="aba" data-vista="vistaContratos" type="button" title="Contratos">
+        <svg width="17" height="17" viewBox="0 0 18 18"><rect x="3" y="2" width="12" height="14" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 6.5h6M6 9.5h6M6 12.5h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span class="aba-label">Contratos</span>
+      </button>
+      <button class="aba" data-vista="vistaCrm" type="button" title="CRM">
+        <svg width="17" height="17" viewBox="0 0 18 18"><rect x="2" y="3" width="4" height="12" rx="1.2" fill="currentColor" opacity=".5"/><rect x="7" y="3" width="4" height="9" rx="1.2" fill="currentColor"/><rect x="12" y="3" width="4" height="6" rx="1.2" fill="currentColor" opacity=".5"/></svg>
+        <span class="aba-label">CRM</span>
+      </button>
+      <button class="aba" data-vista="vistaClientes" type="button" title="Clientes">
+        <svg width="17" height="17" viewBox="0 0 18 18"><circle cx="7" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 15.5c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12.6 4.4a2.7 2.7 0 010 5.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="aba-label">Clientes</span>
+      </button>
+      <button class="aba" id="btnAbrirPontos" type="button" title="Pontos (mapa público)">
+        <svg width="17" height="17" viewBox="0 0 18 18"><path d="M9 16.5s5.5-5.2 5.5-9A5.5 5.5 0 003.5 7.5c0 3.8 5.5 9 5.5 9z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="7.3" r="1.9" fill="currentColor"/></svg>
+        <span class="aba-label">Pontos (mapa público) ↗</span>
+      </button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="sidebar-toggle" id="btnRecolherSidebar" title="Recolher menu">
+        <svg width="17" height="17" viewBox="0 0 18 18"><path d="M11 4L5 9l6 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="aba-label">Recolher menu</span>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <button class="chip-sync" id="chipSync" type="button">🔄 Sincronizar</button>
-      <div class="badge-slogan">Onde marcas ganham vida</div>
-    </div>
-  </div>
-  <nav class="abas">
-    <button class="aba ativa" data-vista="vistaCatalogo" type="button">📍 Catálogo</button>
-    <button class="aba" data-vista="vistaProposta" type="button">📝 Montar proposta <span class="contador" id="contadorItens" style="display:none;">0</span></button>
-    <button class="aba" data-vista="vistaDoc" type="button">📄 Visualizar</button>
-    <button class="aba" data-vista="vistaHistorico" type="button">🗂️ Histórico</button>
-    <button class="aba" data-vista="vistaContratos" type="button">📑 Contratos</button>
-    <button class="aba" data-vista="vistaCrm" type="button">🎯 CRM</button>
-    <button class="aba" data-vista="vistaClientes" type="button">👥 Clientes</button>
-    <button class="aba" id="btnAbrirPontos" type="button">🗺️ Pontos</button>
-  </nav>
-</header>
+  </aside>
+
+  <div class="app-main">
+    <header class="topo-fixo">
+      <div>
+        <h1 id="tituloAba">Catálogo</h1>
+        <p id="subtituloAba">Painéis de rua e Shopping Atlântico disponíveis</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button class="chip-sync" id="chipSync" type="button">🔄 Sincronizar</button>
+        <div class="badge-slogan">Onde marcas ganham vida</div>
+      </div>
+    </header>
 
 <main>
   <!-- =============== CATÁLOGO =============== -->
@@ -1426,6 +1509,8 @@
     <div class="hist-lista" id="listaClientes"></div>
   </section>
 </main>
+  </div>
+</div>
 
 <div class="barra-carrinho" id="barraCarrinho">
   <span class="resumo" id="barraResumo"></span>
@@ -1863,12 +1948,24 @@
   /* ============================================================
      NAVEGAÇÃO ENTRE VISTAS
   ============================================================ */
+  var TITULOS_ABA = {
+    vistaCatalogo: ['Catálogo', 'Painéis de rua e Shopping Atlântico disponíveis'],
+    vistaProposta: ['Montar proposta', 'Dados do cliente, condições comerciais e painéis'],
+    vistaDoc: ['Visualizar', 'Confira o documento antes de gerar o PDF ou enviar'],
+    vistaHistorico: ['Histórico', 'Propostas geradas · abrir, duplicar ou gerar contrato'],
+    vistaContratos: ['Contratos', 'Geração de contrato a partir da proposta'],
+    vistaCrm: ['CRM', 'Funil de negociações em andamento'],
+    vistaClientes: ['Clientes', 'Cadastro e histórico por cliente']
+  };
+
   function trocarVista(idVista) {
     document.querySelectorAll('.vista').forEach(function (v) { v.classList.remove('ativa'); });
     document.querySelectorAll('.aba').forEach(function (a) { a.classList.remove('ativa'); });
     $(idVista).classList.add('ativa');
     var aba = document.querySelector('.aba[data-vista="' + idVista + '"]');
     if (aba) aba.classList.add('ativa');
+    var titulo = TITULOS_ABA[idVista];
+    if (titulo) { $('tituloAba').textContent = titulo[0]; $('subtituloAba').textContent = titulo[1]; }
     if (idVista === 'vistaCatalogo' && estado.finalizada) {
       limparProposta(true); // proposta anterior concluída: catálogo abre zerado
       renderCatalogo();
@@ -1888,6 +1985,8 @@
     document.body.classList.toggle('print-proposta', idVista === 'vistaDoc');
     atualizarBarra();
     window.scrollTo({ top: 0 });
+    var appMain = document.querySelector('.app-main');
+    if (appMain) appMain.scrollTo({ top: 0 });
   }
 
   /* ============================================================
@@ -4063,6 +4162,12 @@
       window.open('pontos', '_blank');
     });
 
+    if (localStorage.getItem('sidebarRecolhida') === '1') $('sidebar').classList.add('recolhida');
+    $('btnRecolherSidebar').addEventListener('click', function () {
+      var recolhida = $('sidebar').classList.toggle('recolhida');
+      localStorage.setItem('sidebarRecolhida', recolhida ? '1' : '0');
+    });
+
     document.querySelectorAll('#chipsCategoria .chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         document.querySelectorAll('#chipsCategoria .chip').forEach(function (c) { c.classList.remove('ativa'); });
@@ -4311,7 +4416,7 @@
      INICIALIZAÇÃO
   ============================================================ */
   function init() {
-    $('logoTopo').src = LOGO_BRANCA;
+    $('logoSidebar').src = LOGO_BRANCA;
     carregarRascunho();
     preencherFormulario();
     registrarEventos();
