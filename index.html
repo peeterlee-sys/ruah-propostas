@@ -174,7 +174,7 @@
   .dica-sync ol { margin: 6px 0 0 18px; padding: 0; }
   .dica-sync li { margin: 3px 0; }
 
-  main { max-width: 1440px; margin: 0 auto; padding: 24px 28px 120px; }
+  main { max-width: 1920px; margin: 0 auto; padding: 24px 28px 120px; }
 
   .vista { display: none; }
   .vista.ativa { display: block; }
@@ -250,7 +250,7 @@
 
   .grade {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 18px;
   }
 
@@ -844,6 +844,7 @@
     .layout-proposta, .layout-contrato { grid-template-columns: 1fr; }
     .doc-contrato { padding: 26px 22px; }
     .metricas, .condicoes { grid-template-columns: repeat(2, 1fr); }
+    .grade { grid-template-columns: repeat(2, 1fr); }
     main { padding: 18px 16px 130px; }
     .sidebar { width: 72px; }
     .sidebar .aba-label, .sidebar .logo-sidebar { display: none; }
