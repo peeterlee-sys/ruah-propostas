@@ -4235,7 +4235,26 @@
     var estOcup = est.filter(function (e) { return e.ocupado; }).length;
     var estPct = est.length ? Math.round(estOcup / est.length * 100) : 0;
     $('pnlEstPill').textContent = estOcup + '/' + est.length + ' ocupados · ' + estPct + '%';
-    $('pnlEstGrid').innerHTML = est.map(function (e) {
+
+    var ORDEM_CATEGORIAS_EST = ['FRONT LIGHT', 'OUTDOOR', 'MEGA OUTDOOR', 'EMPENA'];
+    function categoriaPainel(nome) {
+      var m = nome.match(/^([^\d]+)/);
+      return m ? m[1].trim().toUpperCase() : nome.toUpperCase();
+    }
+    function numeroPainel(nome) {
+      var m = nome.match(/(\d+)/);
+      return m ? parseInt(m[1], 10) : 999999;
+    }
+    var estOrdenado = est.slice().sort(function (a, b) {
+      var ca = categoriaPainel(a.nome), cb = categoriaPainel(b.nome);
+      var ia = ORDEM_CATEGORIAS_EST.indexOf(ca), ib = ORDEM_CATEGORIAS_EST.indexOf(cb);
+      if (ia === -1) ia = ORDEM_CATEGORIAS_EST.length;
+      if (ib === -1) ib = ORDEM_CATEGORIAS_EST.length;
+      if (ia !== ib) return ia - ib;
+      if (ca !== cb) return ca < cb ? -1 : 1;
+      return numeroPainel(a.nome) - numeroPainel(b.nome);
+    });
+    $('pnlEstGrid').innerHTML = estOrdenado.map(function (e) {
       var cls = 'pnl-est-chip ' + (e.ocupado ? 'ocupado' : 'livre');
       return '<div class="' + cls + '"><span class="dot"></span><span class="n">' + escaparHtml(e.nome) + '</span><span class="s">' + (e.ocupado ? 'Ocupado' : 'Disponível') + '</span></div>';
     }).join('');
@@ -4244,7 +4263,8 @@
     var ledOcupSlots = led.reduce(function (s, l) { return s + l.slotsOcupados; }, 0);
     var ledPct = ledTotalSlots ? Math.round(ledOcupSlots / ledTotalSlots * 100) : 0;
     $('pnlLedPill').textContent = ledOcupSlots + '/' + ledTotalSlots + ' slots · ' + ledPct + '%';
-    $('pnlLedList').innerHTML = led.map(function (l) {
+    var ledOrdenado = led.slice().sort(function (a, b) { return numeroPainel(a.nome) - numeroPainel(b.nome); });
+    $('pnlLedList').innerHTML = ledOrdenado.map(function (l) {
       var pct = l.slotsTotal ? Math.round(l.slotsOcupados / l.slotsTotal * 100) : 0;
       var cor = pct >= 70 ? 'var(--verde)' : pct >= 40 ? 'var(--dourado-escuro)' : 'var(--vermelho)';
       return '<div>' +
