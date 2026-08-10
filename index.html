@@ -921,6 +921,10 @@
   .pnl-item-compacto .esq small { color: var(--muted); font-size: 11.5px; }
   .pnl-item-compacto .dir { text-align: right; font-size: 13px; font-weight: 700; color: var(--azul); }
   .pnl-duas-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .pnl-badge-dias { flex: none; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 4px 11px; white-space: nowrap; }
+  .pnl-badge-dias.urgente { color: var(--vermelho); background: var(--vermelho-claro); }
+  .pnl-badge-dias.atencao { color: var(--dourado-escuro); background: #f7efe0; }
+  .pnl-badge-dias.ok { color: var(--muted); background: var(--fundo); }
 
   /* ===================== RESPONSIVO ===================== */
   @media (max-width: 520px) {
@@ -1347,6 +1351,10 @@
     <div class="pnl-conteudo" id="vgConteudo">
       <div class="pnl-kpis" id="vgKpis"></div>
       <div class="crm-metricas" id="vgMetricas"></div>
+      <div class="pnl-secao">
+        <div class="pnl-secao-head"><h3>Contratos de LED vencendo</h3><span class="sub">próximos 60 dias, por data — corra atrás da renovação</span></div>
+        <div class="pnl-lista-compacta" id="vgContratosVencendo"></div>
+      </div>
       <div class="pnl-secao">
         <div class="pnl-secao-head"><h3>Funil por etapa</h3><span class="sub">negociações e valor mensal em cada etapa</span></div>
         <div class="pnl-funil" id="vgFunil"></div>
@@ -4177,6 +4185,23 @@
   function fmtMoedaK(v) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }); }
   function fmtSaldoK(v) { return (v >= 0 ? '+' : '−') + fmtMoedaK(Math.abs(v)); }
 
+  function diasAteVencimento(fimISO) {
+    var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    var p = fimISO.split('-');
+    var fim = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return Math.round((fim - hoje) / 86400000);
+  }
+  function rotuloDiasVencimento(d) {
+    if (d <= 0) return 'Vence hoje';
+    if (d === 1) return 'Vence amanhã';
+    return 'Vence em ' + d + 'd';
+  }
+  function classeDiasVencimento(d) {
+    if (d <= 7) return 'urgente';
+    if (d <= 30) return 'atencao';
+    return 'ok';
+  }
+
   var PONTOS_FINANCEIROS = {};
 
   function montarListaPontosFinanceiros(dados) {
@@ -4363,6 +4388,17 @@
       '<div class="metrica"><small>Pipeline ativo (mensal)</small><strong>' + moeda(ativo) + '</strong></div>' +
       '<div class="metrica"><small>Pontos ocupados</small><strong>' + ocupadosGeral + '/' + totalGeral + ' · ' + pctOcupGeral + '%</strong></div>' +
       '<div class="metrica"><small>Taxa de fechamento</small><strong>' + (taxa === null ? '—' : taxa + '%') + '</strong></div>';
+
+    var contratosVencendo = (dados.contratosVencendo || []).slice().sort(function (a, b) {
+      return a.fim < b.fim ? -1 : (a.fim > b.fim ? 1 : 0);
+    });
+    $('vgContratosVencendo').innerHTML = contratosVencendo.length ? contratosVencendo.map(function (c) {
+      var d = diasAteVencimento(c.fim);
+      var dataBRc = c.fim.split('-').reverse().join('/');
+      return '<div class="pnl-item-compacto"><div class="esq"><strong>' + escaparHtml(c.cliente) + '</strong>' +
+        '<small>' + escaparHtml(c.painel) + ' · até ' + dataBRc + '</small></div>' +
+        '<span class="pnl-badge-dias ' + classeDiasVencimento(d) + '">' + rotuloDiasVencimento(d) + '</span></div>';
+    }).join('') : '<p style="color:var(--muted);font-size:13px;">Nenhum contrato de LED vencendo nos próximos 60 dias.</p>';
 
     var maxSoma = 0;
     var etapasCalc = ETAPAS.map(function (etapa) {
