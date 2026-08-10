@@ -833,6 +833,95 @@
 
   .toast.visivel { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ===================== VISÃO GERAL / PAINÉIS (financeiro) ===================== */
+  .pnl-bloqueado { max-width: 420px; margin: 60px auto; text-align: center; background: white;
+    border: 1px solid var(--linha); border-radius: var(--radius); padding: 40px 32px; box-shadow: var(--sombra); }
+  .pnl-bloqueado .icone { font-size: 34px; margin-bottom: 12px; }
+  .pnl-bloqueado h3 { margin: 0 0 8px; color: var(--azul); }
+  .pnl-bloqueado p { margin: 0 0 22px; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+
+  .pnl-conteudo { display: none; }
+  .pnl-conteudo.visivel { display: block; }
+
+  .pnl-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 14px; margin-bottom: 22px; }
+  .pnl-kpi { background: white; border: 1px solid var(--linha); border-radius: 14px; padding: 17px 19px; }
+  .pnl-kpi small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .pnl-kpi strong { display: block; font-family: inherit; font-size: 25px; font-weight: 800; color: var(--azul); margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .pnl-kpi.navy { background: linear-gradient(135deg, var(--azul), var(--azul-escuro)); border: none; }
+  .pnl-kpi.navy small { color: var(--dourado); }
+  .pnl-kpi.navy strong { color: white; }
+  .pnl-kpi .split { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+  .pnl-kpi .split .big { font-size: 25px; font-weight: 800; }
+  .pnl-kpi .split .sep, .pnl-kpi .split .cap { font-size: 12.5px; color: var(--muted); }
+
+  .pnl-secao { margin-top: 30px; }
+  .pnl-secao-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 13px; flex-wrap: wrap; }
+  .pnl-secao-head h3 { margin: 0; color: var(--azul); font-size: 16px; }
+  .pnl-secao-head .sub { font-size: 12px; color: var(--muted); }
+
+  .pnl-rank-header, .pnl-rank-row { display: grid; grid-template-columns: 46px minmax(0,1fr) 130px 130px 150px; gap: 0 14px; align-items: center; }
+  .pnl-rank-header { padding: 6px 14px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .pnl-rank-header .r, .pnl-rank-row .r { text-align: right; }
+  .pnl-rank-list { display: flex; flex-direction: column; gap: 6px; }
+  .pnl-rank-row { background: white; border: 1px solid var(--linha); border-radius: 10px; padding: 10px 14px; cursor: pointer; transition: border-color .12s, box-shadow .12s; }
+  .pnl-rank-row:hover { border-color: var(--dourado); box-shadow: 0 2px 10px rgba(20,36,62,.08); }
+  .pnl-pos { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12.5px; background: var(--fundo); color: var(--muted); }
+  .pnl-pos.top3 { background: var(--dourado); color: var(--azul); }
+  .pnl-nome { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .pnl-nome .n { font-weight: 600; font-size: 13.5px; color: var(--azul); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pnl-tag { flex: none; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 5px; padding: 2px 6px; background: var(--fundo); color: var(--muted); }
+  .pnl-tag.led { background: var(--azul); color: var(--dourado); }
+  .pnl-money { font-size: 13px; color: var(--texto); font-variant-numeric: tabular-nums; }
+  .pnl-saldo { display: inline-block; min-width: 100px; text-align: right; font-weight: 800; font-size: 13.5px; border-radius: 7px; padding: 5px 10px; font-variant-numeric: tabular-nums; }
+  .pnl-saldo.pos { color: var(--verde); background: var(--verde-claro); }
+  .pnl-saldo.neg { color: var(--vermelho); background: var(--vermelho-claro); }
+  @media (max-width: 1120px) {
+    .pnl-rank-header, .pnl-rank-row { grid-template-columns: 40px minmax(0,1fr) 100px 100px 120px; gap: 0 8px; }
+  }
+  @media (max-width: 860px) {
+    .pnl-rank-header { display: none; }
+    .pnl-rank-row { grid-template-columns: 1fr; }
+    .pnl-rank-row .r { text-align: left; }
+  }
+
+  .pnl-occ-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 16px; }
+  .pnl-occ-card { background: white; border: 1px solid var(--linha); border-radius: 14px; padding: 18px 20px; }
+  .pnl-occ-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 8px; flex-wrap: wrap; }
+  .pnl-occ-head .t { font-size: 13.5px; font-weight: 700; color: var(--azul); }
+  .pnl-occ-head .t .src { font-weight: 500; color: var(--muted); font-size: 12px; }
+  .pnl-occ-head .pill { font-size: 12.5px; font-weight: 700; color: var(--azul); background: var(--fundo); border-radius: 999px; padding: 4px 11px; }
+  .pnl-est-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap: 7px; }
+  .pnl-est-chip { display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 8px 11px; font-size: 12.5px; }
+  .pnl-est-chip .dot { flex: none; width: 8px; height: 8px; border-radius: 999px; }
+  .pnl-est-chip .n { font-weight: 600; color: var(--azul); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  .pnl-est-chip .s { flex: none; font-size: 10.5px; font-weight: 700; }
+  .pnl-est-chip.ocupado { background: var(--verde-claro); }
+  .pnl-est-chip.ocupado .dot { background: var(--verde); } .pnl-est-chip.ocupado .s { color: var(--verde); }
+  .pnl-est-chip.livre { background: #f7efe0; }
+  .pnl-est-chip.livre .dot { background: var(--dourado-escuro); } .pnl-est-chip.livre .s { color: var(--dourado-escuro); }
+  .pnl-led-list { display: flex; flex-direction: column; gap: 12px; }
+  .pnl-led-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .pnl-led-top .n { font-size: 13px; font-weight: 600; color: var(--azul); }
+  .pnl-led-top .f { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
+  .pnl-led-top .stats { font-size: 12px; font-weight: 700; color: var(--azul); }
+  .pnl-led-bar { height: 7px; border-radius: 999px; background: var(--linha); overflow: hidden; margin-top: 5px; }
+  .pnl-led-fill { height: 100%; border-radius: 999px; }
+
+  .pnl-funil { display: flex; flex-direction: column; gap: 10px; }
+  .pnl-funil-linha { display: grid; grid-template-columns: 170px 1fr 130px; gap: 12px; align-items: center; }
+  .pnl-funil-linha .rot { font-size: 13px; font-weight: 600; color: var(--azul); }
+  .pnl-funil-barra { height: 22px; border-radius: 6px; background: var(--fundo); overflow: hidden; }
+  .pnl-funil-fill { height: 100%; border-radius: 6px; background: var(--dourado); }
+  .pnl-funil-linha .val { text-align: right; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  @media (max-width: 640px) { .pnl-funil-linha { grid-template-columns: 1fr; gap: 4px; } .pnl-funil-linha .val { text-align: left; } }
+
+  .pnl-lista-compacta { display: flex; flex-direction: column; gap: 8px; }
+  .pnl-item-compacto { background: white; border: 1px solid var(--linha); border-radius: 10px; padding: 11px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pnl-item-compacto .esq strong { display: block; color: var(--azul); font-size: 13.5px; }
+  .pnl-item-compacto .esq small { color: var(--muted); font-size: 11.5px; }
+  .pnl-item-compacto .dir { text-align: right; font-size: 13px; font-weight: 700; color: var(--azul); }
+  .pnl-duas-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
   /* ===================== RESPONSIVO ===================== */
   @media (max-width: 520px) {
     .barra-carrinho { gap: 10px; padding: 9px 9px 9px 16px; bottom: 14px; }
@@ -841,7 +930,7 @@
   }
 
   @media (max-width: 1020px) {
-    .layout-proposta, .layout-contrato { grid-template-columns: 1fr; }
+    .layout-proposta, .layout-contrato, .pnl-duas-colunas { grid-template-columns: 1fr; }
     .doc-contrato { padding: 26px 22px; }
     .metricas, .condicoes { grid-template-columns: repeat(2, 1fr); }
     .grade { grid-template-columns: repeat(2, 1fr); }
@@ -1184,6 +1273,14 @@
       <img id="logoSidebar" class="logo-sidebar" alt="RUAH" />
     </div>
     <nav class="abas">
+      <button class="aba" data-vista="vistaVisaoGeral" type="button" title="Visão geral">
+        <svg width="17" height="17" viewBox="0 0 18 18"><rect x="1.5" y="9.5" width="3.4" height="7" rx="1" fill="currentColor"/><rect x="7.3" y="5.5" width="3.4" height="11" rx="1" fill="currentColor"/><rect x="13.1" y="2.5" width="3.4" height="14" rx="1" fill="currentColor" opacity=".55"/></svg>
+        <span class="aba-label">Visão geral</span>
+      </button>
+      <button class="aba" data-vista="vistaPaineis" type="button" title="Painéis">
+        <svg width="17" height="17" viewBox="0 0 18 18"><rect x="1.5" y="2.5" width="15" height="9.5" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 15.5h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9 12v3.5" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span class="aba-label">Painéis</span>
+      </button>
       <button class="aba ativa" data-vista="vistaCatalogo" type="button" title="Catálogo">
         <svg width="17" height="17" viewBox="0 0 18 18"><rect x="1.5" y="2.5" width="15" height="10" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="7" y="14.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg>
         <span class="aba-label">Catálogo</span>
@@ -1239,6 +1336,67 @@
     </header>
 
 <main>
+  <!-- =============== VISÃO GERAL =============== -->
+  <section class="vista" id="vistaVisaoGeral">
+    <div class="pnl-bloqueado" id="vgBloqueado">
+      <div class="icone">🔒</div>
+      <h3>Área financeira</h3>
+      <p>Faturamento, pipeline, funil e follow-ups do dia. Acesso restrito.</p>
+      <button class="btn btn-dourado" id="btnDesbloquearVg" type="button">Entrar com a senha</button>
+    </div>
+    <div class="pnl-conteudo" id="vgConteudo">
+      <div class="pnl-kpis" id="vgKpis"></div>
+      <div class="crm-metricas" id="vgMetricas"></div>
+      <div class="pnl-secao">
+        <div class="pnl-secao-head"><h3>Funil por etapa</h3><span class="sub">negociações e valor mensal em cada etapa</span></div>
+        <div class="pnl-funil" id="vgFunil"></div>
+      </div>
+      <div class="pnl-secao pnl-duas-colunas">
+        <div>
+          <div class="pnl-secao-head"><h3>Propostas recentes</h3></div>
+          <div class="pnl-lista-compacta" id="vgPropostas"></div>
+        </div>
+        <div>
+          <div class="pnl-secao-head"><h3>Follow-ups de hoje</h3></div>
+          <div id="vgTarefas"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============== PAINÉIS (financeiro) =============== -->
+  <section class="vista" id="vistaPaineis">
+    <div class="pnl-bloqueado" id="pnlBloqueado">
+      <div class="icone">🔒</div>
+      <h3>Área financeira</h3>
+      <p>Ranking financeiro e ocupação dos painéis. Acesso restrito.</p>
+      <button class="btn btn-dourado" id="btnDesbloquearPnl" type="button">Entrar com a senha</button>
+    </div>
+    <div class="pnl-conteudo" id="pnlConteudo">
+      <div class="pnl-kpis" id="pnlKpis"></div>
+      <div class="pnl-secao">
+        <div class="pnl-secao-head"><h3>Ranking financeiro dos pontos</h3><span class="sub">faturamento − despesas (com todos os rateios)</span></div>
+        <div class="pnl-rank-header">
+          <div>Pos.</div><div>Ponto</div><div class="r">Faturamento</div><div class="r">Despesas</div><div class="r">Saldo</div>
+        </div>
+        <div class="pnl-rank-list" id="pnlRankList"></div>
+      </div>
+      <div class="pnl-secao">
+        <div class="pnl-secao-head"><h3>Ocupação dos painéis</h3></div>
+        <div class="pnl-occ-grid">
+          <div class="pnl-occ-card">
+            <div class="pnl-occ-head"><div class="t">Estáticos <span class="src">· Bom Controle</span></div><div class="pill" id="pnlEstPill"></div></div>
+            <div class="pnl-est-grid" id="pnlEstGrid"></div>
+          </div>
+          <div class="pnl-occ-card">
+            <div class="pnl-occ-head"><div class="t">Painéis de LED <span class="src">· ControlED + Inviron</span></div><div class="pill" id="pnlLedPill"></div></div>
+            <div class="pnl-led-list" id="pnlLedList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- =============== CATÁLOGO =============== -->
   <section class="vista ativa" id="vistaCatalogo">
     <div class="toolbar">
@@ -1710,6 +1868,26 @@
   </div>
 </div>
 
+<!-- senha da área financeira (Visão geral / Painéis) -->
+<div class="modal-fundo" id="modalSenhaPainel">
+  <div class="modal" style="max-width:380px;">
+    <h3>🔒 Área financeira</h3>
+    <p style="color:var(--muted);font-size:13px;margin:-10px 0 16px;line-height:1.5;">Faturamento, despesas e ranking dos pontos. Acesso restrito.</p>
+    <label for="senhaPainelInput">Senha</label>
+    <input id="senhaPainelInput" type="password" placeholder="••••••••" autocomplete="off" />
+    <div style="color:var(--vermelho);font-size:12.5px;margin-top:8px;display:none;" id="senhaPainelErro"></div>
+    <div class="acoes">
+      <button class="btn btn-primario" id="btnConfirmarSenhaPainel" type="button">Entrar</button>
+      <button class="btn btn-claro" id="btnCancelarSenhaPainel" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- detalhe de um ponto (equivalente ao mini-DRE do dashboard) -->
+<div class="modal-fundo" id="modalDetalhePainel">
+  <div class="modal" id="corpoDetalhePainel" style="max-width:520px;"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1950,6 +2128,8 @@
      NAVEGAÇÃO ENTRE VISTAS
   ============================================================ */
   var TITULOS_ABA = {
+    vistaVisaoGeral: ['Visão geral', 'Faturamento, pipeline e follow-ups do dia'],
+    vistaPaineis: ['Painéis', 'Ranking financeiro e ocupação dos pontos'],
     vistaCatalogo: ['Catálogo', 'Painéis de rua e Shopping Atlântico disponíveis'],
     vistaProposta: ['Montar proposta', 'Dados do cliente, condições comerciais e painéis'],
     vistaDoc: ['Visualizar', 'Confira o documento antes de gerar o PDF ou enviar'],
@@ -1982,6 +2162,8 @@
     }
     if (idVista === 'vistaCrm') renderCrm();
     if (idVista === 'vistaClientes') renderClientes();
+    if (idVista === 'vistaVisaoGeral') abrirVistaFinanceira('vistaVisaoGeral');
+    if (idVista === 'vistaPaineis') abrirVistaFinanceira('vistaPaineis');
     document.body.classList.toggle('print-contrato', idVista === 'vistaContratos');
     document.body.classList.toggle('print-proposta', idVista === 'vistaDoc');
     atualizarBarra();
@@ -3659,8 +3841,8 @@
     return !isNaN(d) && d.getTime() < Date.now();
   }
 
-  function renderTarefas(lista) {
-    var box = $('crmTarefas');
+  function renderTarefas(lista, idContainer) {
+    var box = $(idContainer || 'crmTarefas');
     var fimHoje = new Date();
     fimHoje.setHours(23, 59, 59, 999);
 
@@ -3669,7 +3851,10 @@
         new Date(c.lembreteEm) <= fimHoje;
     }).sort(function (a, b) { return new Date(a.lembreteEm) - new Date(b.lembreteEm); });
 
-    if (!tarefas.length) { box.innerHTML = ''; return; }
+    if (!tarefas.length) {
+      box.innerHTML = (idContainer === 'vgTarefas') ? '<p style="color:var(--muted);font-size:13px;">Nenhum follow-up para hoje.</p>' : '';
+      return;
+    }
 
     var linhas = tarefas.map(function (c) {
       var vencida = lembreteVencido(c);
@@ -3899,6 +4084,289 @@
     fecharModalCard();
     renderCrm();
     toast('Card excluído');
+  }
+
+  /* ============================================================
+     VISÃO GERAL / PAINÉIS — dados financeiros (Bom Controle +
+     ControlED/Inviron), servidos por api/painel-data.js e
+     protegidos por senha. Nada aqui muda o CRM/histórico: só lê.
+  ============================================================ */
+  var CHAVE_SENHA_PAINEL = 'ruah_painel_senha_v1'; // sessionStorage — some ao fechar a aba
+  var dadosFinanceirosCache = null;
+  var vistaPendenteSenha = null;
+
+  function senhaFinanceiraGuardada() { return sessionStorage.getItem(CHAVE_SENHA_PAINEL) || ''; }
+
+  function buscarDadosFinanceiros(senha) {
+    return fetch('/api/painel-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha: senha })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('senha');
+      return r.json();
+    });
+  }
+
+  function carregarDadosFinanceiros() {
+    if (dadosFinanceirosCache) return Promise.resolve(dadosFinanceirosCache);
+    var senha = senhaFinanceiraGuardada();
+    if (!senha) return Promise.reject(new Error('sem senha'));
+    return buscarDadosFinanceiros(senha).then(function (dados) {
+      dadosFinanceirosCache = dados;
+      return dados;
+    });
+  }
+
+  function elBloqueioFinanceiro(idVista) { return idVista === 'vistaVisaoGeral' ? $('vgBloqueado') : $('pnlBloqueado'); }
+  function elConteudoFinanceiro(idVista) { return idVista === 'vistaVisaoGeral' ? $('vgConteudo') : $('pnlConteudo'); }
+
+  function mostrarBloqueioFinanceiro(idVista) {
+    elConteudoFinanceiro(idVista).classList.remove('visivel');
+    elBloqueioFinanceiro(idVista).style.display = '';
+  }
+
+  function mostrarConteudoFinanceiro(idVista) {
+    carregarDadosFinanceiros().then(function (dados) {
+      elBloqueioFinanceiro(idVista).style.display = 'none';
+      elConteudoFinanceiro(idVista).classList.add('visivel');
+      if (idVista === 'vistaVisaoGeral') renderVisaoGeral(dados);
+      else renderPaineis(dados);
+    }).catch(function () {
+      sessionStorage.removeItem(CHAVE_SENHA_PAINEL);
+      mostrarBloqueioFinanceiro(idVista);
+    });
+  }
+
+  function abrirVistaFinanceira(idVista) {
+    if (senhaFinanceiraGuardada()) mostrarConteudoFinanceiro(idVista);
+    else mostrarBloqueioFinanceiro(idVista);
+  }
+
+  function abrirModalSenhaPainel(idVista) {
+    vistaPendenteSenha = idVista;
+    $('senhaPainelInput').value = '';
+    $('senhaPainelErro').style.display = 'none';
+    $('modalSenhaPainel').classList.add('aberto');
+    setTimeout(function () { $('senhaPainelInput').focus(); }, 50);
+  }
+
+  function fecharModalSenhaPainel() { $('modalSenhaPainel').classList.remove('aberto'); }
+
+  function confirmarSenhaPainel() {
+    var senha = $('senhaPainelInput').value;
+    if (!senha) return;
+    var btn = $('btnConfirmarSenhaPainel');
+    btn.disabled = true;
+    btn.textContent = 'Verificando…';
+    buscarDadosFinanceiros(senha).then(function (dados) {
+      dadosFinanceirosCache = dados;
+      sessionStorage.setItem(CHAVE_SENHA_PAINEL, senha);
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+      fecharModalSenhaPainel();
+      if (vistaPendenteSenha) mostrarConteudoFinanceiro(vistaPendenteSenha);
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+      $('senhaPainelErro').textContent = 'Senha incorreta.';
+      $('senhaPainelErro').style.display = 'block';
+    });
+  }
+
+  function fmtMoedaK(v) { return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }); }
+  function fmtSaldoK(v) { return (v >= 0 ? '+' : '−') + fmtMoedaK(Math.abs(v)); }
+
+  var PONTOS_FINANCEIROS = {};
+
+  function montarListaPontosFinanceiros(dados) {
+    var est = (dados.estaticos || []).map(function (p) {
+      return { nome: p.nome, fat: p.faturamento, desp: p.despesas, tipo: 'Estático', det: p.detalhe, ocupado: p.ocupado };
+    });
+    var led = (dados.leds || []).map(function (p) {
+      return { nome: p.nome, fat: p.faturamento, desp: p.despesas, tipo: 'LED', det: p.detalhe, slotsTotal: p.slotsTotal, slotsOcupados: p.slotsOcupados, fonte: p.fonte };
+    });
+    var all = est.concat(led).map(function (p) { p.saldo = p.fat - p.desp; return p; });
+    all.sort(function (a, b) { return b.saldo - a.saldo; });
+    return all;
+  }
+
+  function kpisFinanceiros(all) {
+    var fatTotal = all.reduce(function (s, p) { return s + p.fat; }, 0);
+    var despTotal = all.reduce(function (s, p) { return s + p.desp; }, 0);
+    var saldoTotal = fatTotal - despTotal;
+    var positivos = all.filter(function (p) { return p.saldo >= 0; }).length;
+    return '<div class="pnl-kpi"><small>Faturamento total</small><strong>' + fmtMoedaK(fatTotal) + '</strong></div>' +
+      '<div class="pnl-kpi"><small>Despesas totais</small><strong>' + fmtMoedaK(despTotal) + '</strong></div>' +
+      '<div class="pnl-kpi navy"><small>Saldo geral</small><strong>' + fmtSaldoK(saldoTotal) + '</strong></div>' +
+      '<div class="pnl-kpi"><small>Pontos no positivo</small><div class="split">' +
+        '<span class="big" style="color:var(--verde)">' + positivos + '</span><span class="sep">vs</span>' +
+        '<span class="big" style="color:var(--vermelho)">' + (all.length - positivos) + '</span><span class="cap">no negativo</span>' +
+      '</div></div>';
+  }
+
+  function renderPaineis(dados) {
+    var all = montarListaPontosFinanceiros(dados);
+    PONTOS_FINANCEIROS = {};
+    all.forEach(function (p) { PONTOS_FINANCEIROS[p.nome] = p; });
+
+    $('pnlKpis').innerHTML = kpisFinanceiros(all);
+
+    $('pnlRankList').innerHTML = all.map(function (p, i) {
+      var pos = i + 1;
+      var badge = 'pnl-pos' + (pos <= 3 ? ' top3' : '');
+      var tag = 'pnl-tag' + (p.tipo === 'LED' ? ' led' : '');
+      var pill = 'pnl-saldo ' + (p.saldo >= 0 ? 'pos' : 'neg');
+      return '<div class="pnl-rank-row" data-nome="' + escaparHtml(p.nome) + '">' +
+        '<div class="' + badge + '">' + pos + 'º</div>' +
+        '<div class="pnl-nome"><span class="n">' + escaparHtml(p.nome) + '</span><span class="' + tag + '">' + p.tipo + '</span></div>' +
+        '<div class="r pnl-money">' + fmtMoedaK(p.fat) + '</div>' +
+        '<div class="r pnl-money">' + fmtMoedaK(p.desp) + '</div>' +
+        '<div class="r"><span class="' + pill + '">' + fmtSaldoK(p.saldo) + '</span></div>' +
+        '</div>';
+    }).join('');
+
+    document.querySelectorAll('#pnlRankList [data-nome]').forEach(function (row) {
+      row.addEventListener('click', function () { abrirDetalhePainel(row.getAttribute('data-nome')); });
+    });
+
+    var est = dados.estaticos || [];
+    var led = dados.leds || [];
+    var estOcup = est.filter(function (e) { return e.ocupado; }).length;
+    var estPct = est.length ? Math.round(estOcup / est.length * 100) : 0;
+    $('pnlEstPill').textContent = estOcup + '/' + est.length + ' ocupados · ' + estPct + '%';
+    $('pnlEstGrid').innerHTML = est.map(function (e) {
+      var cls = 'pnl-est-chip ' + (e.ocupado ? 'ocupado' : 'livre');
+      return '<div class="' + cls + '"><span class="dot"></span><span class="n">' + escaparHtml(e.nome) + '</span><span class="s">' + (e.ocupado ? 'Ocupado' : 'Disponível') + '</span></div>';
+    }).join('');
+
+    var ledTotalSlots = led.reduce(function (s, l) { return s + l.slotsTotal; }, 0);
+    var ledOcupSlots = led.reduce(function (s, l) { return s + l.slotsOcupados; }, 0);
+    var ledPct = ledTotalSlots ? Math.round(ledOcupSlots / ledTotalSlots * 100) : 0;
+    $('pnlLedPill').textContent = ledOcupSlots + '/' + ledTotalSlots + ' slots · ' + ledPct + '%';
+    $('pnlLedList').innerHTML = led.map(function (l) {
+      var pct = l.slotsTotal ? Math.round(l.slotsOcupados / l.slotsTotal * 100) : 0;
+      var cor = pct >= 70 ? 'var(--verde)' : pct >= 40 ? 'var(--dourado-escuro)' : 'var(--vermelho)';
+      return '<div>' +
+        '<div class="pnl-led-top"><span class="n">' + escaparHtml(l.nome) + '<span class="f">' + escaparHtml(l.fonte || '') + '</span></span>' +
+        '<span class="stats">' + l.slotsOcupados + '/' + l.slotsTotal + ' · ' + pct + '%</span></div>' +
+        '<div class="pnl-led-bar"><div class="pnl-led-fill" style="width:' + pct + '%;background:' + cor + '"></div></div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function linhaDetalhePainel(rotulo, valor) {
+    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--linha);font-size:13px;"><span>' + escaparHtml(rotulo) + '</span><strong>' + fmtMoedaK(valor) + '</strong></div>';
+  }
+
+  function abrirDetalhePainel(nome) {
+    var p = PONTOS_FINANCEIROS[nome];
+    if (!p) return;
+    var d = p.det;
+    var h = '<h3>' + escaparHtml(p.nome) + ' <span class="pnl-tag' + (p.tipo === 'LED' ? ' led' : '') + '" style="margin-left:6px;vertical-align:middle;">' + p.tipo + '</span></h3>';
+    var sub = 'Detalhamento do mês';
+    if (p.tipo === 'LED' && p.slotsTotal) {
+      sub += ' · ' + p.slotsOcupados + '/' + p.slotsTotal + ' slots ocupados (' + Math.round(p.slotsOcupados / p.slotsTotal * 100) + '%)';
+    }
+    h += '<p style="color:var(--muted);font-size:12.5px;margin-top:-10px;">' + sub + '</p>';
+
+    if (!d) {
+      h += '<p style="color:var(--muted);font-size:13px;">Detalhamento indisponível para estes dados.</p>';
+    } else {
+      h += '<div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;">Receitas</div>';
+      if (d.receitas && d.receitas.length) {
+        d.receitas.forEach(function (r) { h += linhaDetalhePainel(r.rotulo, r.valor); });
+      } else {
+        h += '<p style="color:var(--muted);font-size:12.5px;">Sem receita registrada no mês.</p>';
+      }
+      h += '<div style="display:flex;justify-content:space-between;padding:9px 0;font-weight:800;font-size:13.5px;"><span>Receita total</span><span>' + fmtMoedaK(p.fat) + '</span></div>';
+
+      h += '<div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;">Despesas do painel</div>';
+      if (d.despesasDiretas && d.despesasDiretas.length) {
+        d.despesasDiretas.forEach(function (r) { h += linhaDetalhePainel(r.rotulo, r.valor); });
+      } else {
+        h += '<p style="color:var(--muted);font-size:12.5px;">Sem custo lançado diretamente neste painel.</p>';
+      }
+
+      var rateioItens = d.rateioItens || [];
+      if (rateioItens.length || d.rateio) {
+        h += '<div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;">Custos gerais (fatia deste painel)</div>';
+        var grupoAtual = null;
+        rateioItens.forEach(function (r) {
+          if (r.grupo && r.grupo !== grupoAtual) {
+            grupoAtual = r.grupo;
+            h += '<div style="font-size:10.5px;font-weight:700;color:var(--dourado-escuro);margin:10px 0 3px;">' + escaparHtml(r.grupo) + '</div>';
+          }
+          h += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--linha);font-size:12.5px;color:var(--muted);"><span>' + escaparHtml(r.rotulo) + '</span><span>' + fmtMoedaK(r.valor) + '</span></div>';
+        });
+        h += '<div style="display:flex;justify-content:space-between;padding:7px 0;font-weight:700;font-size:12.5px;"><span>Subtotal custos gerais</span><span>' + fmtMoedaK(d.rateio) + '</span></div>';
+      }
+      h += '<div style="display:flex;justify-content:space-between;padding:9px 0;font-weight:800;font-size:13.5px;"><span>Despesa total</span><span>' + fmtMoedaK(p.desp) + '</span></div>';
+    }
+
+    h += '<div style="margin-top:16px;background:var(--azul);border-radius:10px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;">' +
+      '<span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dourado);">Resultado do mês</span>' +
+      '<span style="font-weight:800;font-size:19px;color:' + (p.saldo >= 0 ? '#3ddc84' : '#ff6b5e') + ';">' + fmtSaldoK(p.saldo) + '</span></div>';
+    h += '<div class="acoes" style="margin-top:18px;"><button class="btn btn-claro" id="btnFecharDetalhePainel" type="button">Fechar</button></div>';
+
+    $('corpoDetalhePainel').innerHTML = h;
+    $('modalDetalhePainel').classList.add('aberto');
+    $('btnFecharDetalhePainel').addEventListener('click', function () { $('modalDetalhePainel').classList.remove('aberto'); });
+  }
+
+  function renderVisaoGeral(dados) {
+    var all = montarListaPontosFinanceiros(dados);
+    $('vgKpis').innerHTML = kpisFinanceiros(all);
+
+    sincronizarCrmComHistorico();
+    var listaCrm = carregarCrm();
+    var ativo = 0, fechadosQtd = 0, perdidosQtd = 0;
+    listaCrm.forEach(function (c) {
+      var v = Number(c.valorMensal || 0);
+      if (c.etapa === 'fechado') fechadosQtd++;
+      else if (c.etapa === 'perdido') perdidosQtd++;
+      else ativo += v;
+    });
+    var decididos = fechadosQtd + perdidosQtd;
+    var taxa = decididos ? Math.round(fechadosQtd * 100 / decididos) : null;
+
+    var est = dados.estaticos || [];
+    var led = dados.leds || [];
+    var ledTotalSlots = led.reduce(function (s, l) { return s + l.slotsTotal; }, 0);
+    var ledOcupSlots = led.reduce(function (s, l) { return s + l.slotsOcupados; }, 0);
+    var estOcup = est.filter(function (e) { return e.ocupado; }).length;
+    var totalGeral = est.length + ledTotalSlots;
+    var ocupadosGeral = estOcup + ledOcupSlots;
+    var pctOcupGeral = totalGeral ? Math.round(ocupadosGeral / totalGeral * 100) : 0;
+
+    $('vgMetricas').innerHTML =
+      '<div class="metrica"><small>Pipeline ativo (mensal)</small><strong>' + moeda(ativo) + '</strong></div>' +
+      '<div class="metrica"><small>Pontos ocupados</small><strong>' + ocupadosGeral + '/' + totalGeral + ' · ' + pctOcupGeral + '%</strong></div>' +
+      '<div class="metrica"><small>Taxa de fechamento</small><strong>' + (taxa === null ? '—' : taxa + '%') + '</strong></div>';
+
+    var maxSoma = 0;
+    var etapasCalc = ETAPAS.map(function (etapa) {
+      var cards = listaCrm.filter(function (c) { return c.etapa === etapa.id; });
+      var soma = cards.reduce(function (a, c) { return a + Number(c.valorMensal || 0); }, 0);
+      maxSoma = Math.max(maxSoma, soma);
+      return { nome: etapa.nome, qtd: cards.length, soma: soma };
+    });
+    $('vgFunil').innerHTML = etapasCalc.map(function (e) {
+      var pct = maxSoma ? Math.round(e.soma / maxSoma * 100) : 0;
+      return '<div class="pnl-funil-linha">' +
+        '<span class="rot">' + e.nome + ' (' + e.qtd + ')</span>' +
+        '<div class="pnl-funil-barra"><div class="pnl-funil-fill" style="width:' + Math.max(pct, e.qtd ? 3 : 0) + '%"></div></div>' +
+        '<span class="val">' + moeda(e.soma) + '/mês</span>' +
+        '</div>';
+    }).join('');
+
+    var hist = carregarHistorico().slice().sort(function (a, b) { return new Date(b.data) - new Date(a.data); }).slice(0, 5);
+    $('vgPropostas').innerHTML = hist.length ? hist.map(function (h) {
+      var quando = new Date(h.data).toLocaleDateString('pt-BR');
+      return '<div class="pnl-item-compacto"><div class="esq"><strong>' + escaparHtml(h.cliente) + '</strong><small>' + escaparHtml(h.codigo) + ' · ' + quando + '</small></div><div class="dir">' + moeda(h.mensal) + '/mês</div></div>';
+    }).join('') : '<p style="color:var(--muted);font-size:13px;">Nenhuma proposta salva ainda.</p>';
+
+    renderTarefas(listaCrm, 'vgTarefas');
   }
 
   /* ============================================================
@@ -4396,6 +4864,19 @@
     });
     $('modalSync').addEventListener('click', function (ev) {
       if (ev.target === this) fecharModalSync();
+    });
+
+    // área financeira (Visão geral / Painéis)
+    $('btnDesbloquearVg').addEventListener('click', function () { abrirModalSenhaPainel('vistaVisaoGeral'); });
+    $('btnDesbloquearPnl').addEventListener('click', function () { abrirModalSenhaPainel('vistaPaineis'); });
+    $('btnCancelarSenhaPainel').addEventListener('click', fecharModalSenhaPainel);
+    $('btnConfirmarSenhaPainel').addEventListener('click', confirmarSenhaPainel);
+    $('senhaPainelInput').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') confirmarSenhaPainel(); });
+    $('modalSenhaPainel').addEventListener('click', function (ev) {
+      if (ev.target === this) fecharModalSenhaPainel();
+    });
+    $('modalDetalhePainel').addEventListener('click', function (ev) {
+      if (ev.target === this) $('modalDetalhePainel').classList.remove('aberto');
     });
 
     window.addEventListener('focus', function () { sincronizar('foco'); });
