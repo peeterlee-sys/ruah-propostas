@@ -1222,9 +1222,6 @@
     margin-left: 6px;
   }
 
-  /* link do mapa: texto amigável na tela, URL visível no PDF impresso */
-  .so-print { display: none; }
-  .so-print a { color: var(--azul); word-break: break-all; font-size: 11px; }
 
   /* ===================== IMPRESSÃO ===================== */
   @media print {
@@ -1240,8 +1237,6 @@
     .doc-capa { border-radius: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .doc-tabela tr, .metrica, .condicao, .caixa-destaque { break-inside: avoid; }
-    .so-tela { display: none; }
-    .so-print { display: inline; }
 
     /* impressão do contrato: mostra só o documento do contrato */
     body.print-contrato #vistaDoc { display: none !important; }
@@ -2432,8 +2427,7 @@
           '<h3>' + escaparHtml(i.nome) + '</h3>' +
           '<div class="ponto-endereco">' + escaparHtml(i.endereco) +
             (i.maps
-              ? ' · <span class="so-tela"><a href="' + escaparHtml(i.maps) + '">📍 Ver localização</a></span>' +
-                '<span class="so-print">📍 <a href="' + escaparHtml(i.maps) + '">' + escaparHtml(i.maps) + '</a></span>'
+              ? ' · <a href="' + escaparHtml(i.maps) + '">📍 Ver localização</a>'
               : '') +
           '</div>' +
           '<div class="ponto-specs">' +
