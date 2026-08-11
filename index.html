@@ -586,7 +586,7 @@
 
   .metricas {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 14px;
     margin-bottom: 30px;
   }
@@ -1944,8 +1944,8 @@
     { id: 'shop-3', categoria: 'shopping', nome: 'Shopping Atlântico - Praça de Eventos', endereco: 'Praça de Eventos do Atlântico Shopping', tamanho: '9,60m x 1,44m', resolucao: '2400x360px', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 1500 },
     { id: 'shop-4', categoria: 'shopping', nome: 'Circuito Digital Shopping Atlântico', endereco: 'Totens + Estacionamento + Praça de Eventos', tamanho: 'Circuito completo', resolucao: 'Conforme cada mídia', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 9950 },
     { id: 'outdoor-1', categoria: 'outdoor', nome: 'Outdoor 01 - Rua Marrocos', endereco: 'Av. do Estado, 2800 - esquina com a Rua Marrocos, Balneário Camboriú - SC', tamanho: '6,12 x 3,84m', material: 'Lona', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Av. do Estado, 2800 esquina Rua Marrocos, Balneário Camboriú - SC'), valor: 2500 },
-    { id: 'empena-4', categoria: 'empena', nome: 'Empena 04 - Ed. Letícia', endereco: 'Rua Peru, 12 - esquina com a Av. do Estado, Balneário Camboriú - SC', tamanho: '3,05 x 8,60m', material: 'Lona', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Rua Peru, 12 esquina Av. do Estado, Balneário Camboriú - SC'), valor: 2500 },
-    { id: 'empena-6', categoria: 'empena', nome: 'Empena 06 - Dupla Edifício Rosamonte', endereco: '3ª Avenida, 1150, Balneário Camboriú - SC', tamanho: '4,5 x 20,7m', material: 'Lona', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('3ª Avenida, 1150, Balneário Camboriú - SC'), valor: 20000 }
+    { id: 'empena-4', categoria: 'empena', nome: 'Empena 04 - Ed. Letícia', endereco: 'Rua Peru, 12 - esquina com a Av. do Estado, Balneário Camboriú - SC', tamanho: '3,05 x 8,60m', material: 'Lona', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Rua Peru, 12 esquina Av. do Estado, Balneário Camboriú - SC'), valor: 2500, foto: 'assets/paineis/empena-4.jpg' },
+    { id: 'empena-6', categoria: 'empena', nome: 'Empena 06 - Dupla Edifício Rosamonte', endereco: '3ª Avenida, 1150, Balneário Camboriú - SC', tamanho: '4,5 x 20,7m', material: 'Lona', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('3ª Avenida, 1150, Balneário Camboriú - SC'), valor: 20000, foto: 'assets/paineis/empena-6.jpg' }
   ];
 
   var CATEGORIA_LABELS = {
@@ -2406,6 +2406,18 @@
   /* ============================================================
      DOCUMENTO FINAL
   ============================================================ */
+  function textoMaterial() {
+    var digital = estado.itens.some(function (i) { return !!i.resolucao; });
+    var estaticos = [];
+    estado.itens.forEach(function (i) {
+      if (i.material && estaticos.indexOf(i.material) === -1) estaticos.push(i.material);
+    });
+    var partes = [];
+    if (digital) partes.push('MP4 · 10 segundos');
+    if (estaticos.length) partes.push(estaticos.join(', '));
+    return partes.join(' + ');
+  }
+
   function renderDocumento() {
     var c = calcular();
     var doc = $('documento');
@@ -2462,7 +2474,7 @@
             (estado.cnpj ? '<div style="color:#697586;font-size:11.5px;margin-top:4px;">' + escaparHtml(estado.cnpj) + '</div>' : '') + '</div>' +
           '<div class="metrica"><small>Investimento mensal</small><strong>' + moeda(c.mensal) + '</strong></div>' +
           '<div class="metrica"><small>Painéis contratados</small><strong>' + estado.itens.length + '</strong></div>' +
-          '<div class="metrica"><small>Impactos/mês</small><strong>' + impactosCompactos(c.impactos) + '</strong></div>' +
+          (c.impactos ? '<div class="metrica"><small>Impactos/mês</small><strong>' + impactosCompactos(c.impactos) + '</strong></div>' : '') +
         '</div>' +
 
         '<h2 class="secao">Pontos de mídia</h2>' +
@@ -2486,7 +2498,7 @@
           '<div class="condicao"><small>Forma</small><strong>' + escaparHtml(estado.pagamento) + '</strong></div>' +
           (estado.inicio ? '<div class="condicao"><small>Início da veiculação</small><strong>' + dataBR(estado.inicio) + '</strong></div>' : '') +
           '<div class="condicao"><small>Validade da proposta</small><strong>' + dataBR(estado.validade) + '</strong></div>' +
-          '<div class="condicao"><small>Material</small><strong>MP4 · 10 segundos</strong></div>' +
+          (textoMaterial() ? '<div class="condicao"><small>Material</small><strong>' + escaparHtml(textoMaterial()) + '</strong></div>' : '') +
         '</div>' +
 
         '<div class="caixa-destaque">' +
@@ -2537,7 +2549,7 @@
       return '• ' + i.nome + ' — ' + moeda(i.valor) + '/mês';
     }).join('\n');
 
-    return [
+    var linhas = [
       '*Proposta Ruah — Mídia OOH/DOOH* 🚀',
       '',
       'Olá' + (estado.contato ? ', ' + estado.contato : '') + '! Segue a proposta para *' + (estado.cliente || 'sua empresa') + '*:',
@@ -2545,13 +2557,14 @@
       itens,
       '',
       '💰 Investimento mensal: *' + moeda(c.mensal) + '*',
-      '📅 Período: ' + rotuloPeriodo() + (c.parcelas > 1 ? ' (' + c.parcelas + 'x de ' + moeda(c.valorParcela) + ')' : ''),
-      '👁️ Impactos estimados: ' + numeroBR(c.impactos) + '/mês',
-      '⏳ Proposta válida até ' + dataBR(estado.validade),
-      '',
-      'Qualquer dúvida estou à disposição!',
-      '_' + estado.vendedor + ' · Ruah — Onde marcas ganham vida_'
-    ].join('\n');
+      '📅 Período: ' + rotuloPeriodo() + (c.parcelas > 1 ? ' (' + c.parcelas + 'x de ' + moeda(c.valorParcela) + ')' : '')
+    ];
+    if (c.impactos) linhas.push('👁️ Impactos estimados: ' + numeroBR(c.impactos) + '/mês');
+    linhas.push('⏳ Proposta válida até ' + dataBR(estado.validade));
+    linhas.push('');
+    linhas.push('Qualquer dúvida estou à disposição!');
+    linhas.push('_' + estado.vendedor + ' · Ruah — Onde marcas ganham vida_');
+    return linhas.join('\n');
   }
 
   function enviarWhatsApp() {
