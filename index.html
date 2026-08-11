@@ -1412,6 +1412,10 @@
         <button class="chip ativa" data-cat="todos" type="button">Todos</button>
         <button class="chip" data-cat="rua" type="button">🛣️ Painéis de Rua</button>
         <button class="chip" data-cat="shopping" type="button">🛍️ Shopping Atlântico</button>
+        <button class="chip" data-cat="outdoor" type="button">🪧 Outdoor</button>
+        <button class="chip" data-cat="front-light" type="button">💡 Front Light</button>
+        <button class="chip" data-cat="mega-outdoor" type="button">🏗️ Mega Outdoor</button>
+        <button class="chip" data-cat="empena" type="button">🏢 Empena</button>
       </div>
       <div class="busca"><input id="campoBusca" placeholder="Buscar por nome ou endereço..." /></div>
       <button class="btn-novo-ponto" id="btnNovoPonto" type="button">+ Cadastrar ponto</button>
@@ -1938,8 +1942,20 @@
     { id: 'shop-1', categoria: 'shopping', nome: 'Shopping Atlântico - Totens de LED', endereco: 'Atlântico Shopping - Balneário Camboriú - SC', tamanho: '77cm x 1,53m', resolucao: '256x512px', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 8450 },
     { id: 'shop-2', categoria: 'shopping', nome: 'Shopping Atlântico - Entrada do Estacionamento', endereco: 'Rampa principal de acesso ao estacionamento', tamanho: '5,76m x 0,80m', resolucao: '1440x200px', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 650 },
     { id: 'shop-3', categoria: 'shopping', nome: 'Shopping Atlântico - Praça de Eventos', endereco: 'Praça de Eventos do Atlântico Shopping', tamanho: '9,60m x 1,44m', resolucao: '2400x360px', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 1500 },
-    { id: 'shop-4', categoria: 'shopping', nome: 'Circuito Digital Shopping Atlântico', endereco: 'Totens + Estacionamento + Praça de Eventos', tamanho: 'Circuito completo', resolucao: 'Conforme cada mídia', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 9950 }
+    { id: 'shop-4', categoria: 'shopping', nome: 'Circuito Digital Shopping Atlântico', endereco: 'Totens + Estacionamento + Praça de Eventos', tamanho: 'Circuito completo', resolucao: 'Conforme cada mídia', impacto: '450 mil (fluxo mensal)', impactoNumero: 450000, maps: '', valor: 9950 },
+    { id: 'outdoor-1', categoria: 'outdoor', nome: 'Outdoor 01 - Rua Marrocos', endereco: 'Av. do Estado, 2800 - esquina com a Rua Marrocos, Balneário Camboriú - SC', tamanho: '6,12 x 3,84m', material: 'Lona', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Av. do Estado, 2800 esquina Rua Marrocos, Balneário Camboriú - SC'), valor: 2500 },
+    { id: 'empena-4', categoria: 'empena', nome: 'Empena 04 - Ed. Letícia', endereco: 'Rua Peru, 12 - esquina com a Av. do Estado, Balneário Camboriú - SC', tamanho: '3,05 x 8,60m', material: 'Lona', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Rua Peru, 12 esquina Av. do Estado, Balneário Camboriú - SC'), valor: 2500 },
+    { id: 'empena-6', categoria: 'empena', nome: 'Empena 06 - Dupla Edifício Rosamonte', endereco: '3ª Avenida, 1150, Balneário Camboriú - SC', tamanho: '4,5 x 20,7m', material: 'Lona', maps: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('3ª Avenida, 1150, Balneário Camboriú - SC'), valor: 20000 }
   ];
+
+  var CATEGORIA_LABELS = {
+    rua: 'Painel de rua · LED',
+    shopping: 'Shopping Atlântico · Indoor',
+    outdoor: 'Outdoor · Estático',
+    'front-light': 'Front Light · Estático',
+    'mega-outdoor': 'Mega Outdoor · Estático',
+    empena: 'Empena · Estático'
+  };
 
   var CHAVE_CATALOGO = 'ruah_catalogo_v1';
   var CHAVE_RASCUNHO = 'ruah_rascunho_v1';
@@ -2051,6 +2067,17 @@
     lista.forEach(function (p) {
       if (!p.foto && fotosPadrao[p.id]) p.foto = fotosPadrao[p.id];
     });
+    // pontos novos do catálogo padrão (ex.: painéis estáticos cadastrados depois
+    // que este navegador já tinha um catálogo salvo) entram automaticamente
+    var idsExistentes = {};
+    lista.forEach(function (p) { idsExistentes[p.id] = true; });
+    var novos = CATALOGO_PADRAO.filter(function (p) { return !idsExistentes[p.id]; });
+    if (novos.length) {
+      lista = lista.concat(JSON.parse(JSON.stringify(novos)));
+      armazem.setItem(CHAVE_CATALOGO, JSON.stringify(lista));
+      armazem.setItem('ruah_catalogo_em_v1', new Date().toISOString());
+      agendarSync();
+    }
     return lista;
   }
 
@@ -2204,7 +2231,7 @@
       var card = document.createElement('div');
       card.className = 'card-ponto' + (noCarrinho ? ' selecionado' : '');
 
-      var tipoLabel = p.categoria === 'rua' ? 'Painel de rua · LED' : 'Shopping Atlântico · Indoor';
+      var tipoLabel = CATEGORIA_LABELS[p.categoria] || p.categoria;
       var mapsHtml = p.maps
         ? '<a class="link-maps" href="' + escaparHtml(p.maps) + '" target="_blank" rel="noopener">Ver no Google Maps ↗</a>'
         : '';
@@ -2219,9 +2246,10 @@
           '<div class="endereco">📍 <span>' + escaparHtml(p.endereco) + '</span></div>' +
           '<div class="specs">' +
             '<span class="spec">📐 ' + escaparHtml(p.tamanho) + '</span>' +
-            '<span class="spec">🖥️ ' + escaparHtml(p.resolucao) + '</span>' +
+            (p.resolucao ? '<span class="spec">🖥️ ' + escaparHtml(p.resolucao) + '</span>' : '') +
+            (p.material ? '<span class="spec">🎨 ' + escaparHtml(p.material) + '</span>' : '') +
           '</div>' +
-          '<div class="impacto-linha">👁️ ' + escaparHtml(p.impacto) + ' de impactos/mês</div>' +
+          (p.impacto ? '<div class="impacto-linha">👁️ ' + escaparHtml(p.impacto) + ' de impactos/mês</div>' : '') +
           (p.insercoes ? '<div class="impacto-linha" style="color:var(--muted);">▶️ ' + escaparHtml(p.insercoes) + '</div>' : '') +
           (mapsHtml ? '<div>' + mapsHtml + '</div>' : '') +
         '</div>' +
@@ -2260,7 +2288,7 @@
       uid: 'i' + Date.now() + Math.floor(Math.random() * 10000),
       refId: p.id,
       nome: p.nome, endereco: p.endereco,
-      tamanho: p.tamanho, resolucao: p.resolucao,
+      tamanho: p.tamanho, resolucao: p.resolucao, material: p.material || '',
       impacto: p.impacto, impactoNumero: p.impactoNumero,
       insercoes: p.insercoes || '',
       maps: p.maps || '',
@@ -2304,7 +2332,7 @@
       div.className = 'item-prop';
       div.innerHTML =
         '<div><div class="nome">' + escaparHtml(item.nome) + '</div>' +
-        '<div class="sub">👁️ ' + escaparHtml(item.impacto) + '/mês</div></div>' +
+        (item.impacto ? '<div class="sub">👁️ ' + escaparHtml(item.impacto) + '/mês</div>' : '') + '</div>' +
         '<input value="' + String(item.valor).replace('.', ',') + '" inputmode="numeric" title="Valor mensal negociado" />' +
         '<button class="btn-remover" title="Remover" type="button">✕</button>';
 
@@ -2397,9 +2425,9 @@
               : '') +
           '</div>' +
           '<div class="ponto-specs">' +
-            '<span>MP4 · 10s</span>' +
             '<span>' + escaparHtml(i.tamanho) + '</span>' +
-            '<span>' + escaparHtml(i.resolucao) + '</span>' +
+            (i.resolucao ? '<span>MP4 · 10s</span><span>' + escaparHtml(i.resolucao) + '</span>' : '') +
+            (i.material ? '<span>' + escaparHtml(i.material) + '</span>' : '') +
             (i.impacto ? '<span>' + escaparHtml(i.impacto) + ' impactos/mês</span>' : '') +
           '</div>' +
         '</div>' +
