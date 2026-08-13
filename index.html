@@ -956,6 +956,41 @@
     margin-bottom: 18px;
   }
 
+  .crm-vendedores {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .crm-vendedor-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    padding: 7px 14px 7px 7px;
+    font-size: 12.5px;
+  }
+
+  .crm-vendedor-chip .av {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--azul);
+    color: var(--dourado);
+    font-weight: 800;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+
+  .crm-vendedor-chip .nome { color: var(--muted); }
+  .crm-vendedor-chip strong { color: var(--azul); font-weight: 800; }
+
   .kanban {
     display: flex;
     gap: 14px;
@@ -1471,7 +1506,11 @@
             <label for="fPeriodo">Período do contrato</label>
             <select id="fPeriodo">
               <option value="12">12 meses</option>
+              <option value="11">11 meses</option>
+              <option value="10">10 meses</option>
+              <option value="9">9 meses</option>
               <option value="8">8 meses</option>
+              <option value="7">7 meses</option>
               <option value="6">6 meses</option>
               <option value="5">5 meses</option>
               <option value="4">4 meses</option>
@@ -1661,9 +1700,10 @@
       <button class="btn btn-dourado" id="btnNovaOportunidade" type="button">+ Nova oportunidade</button>
       <div class="espacador"></div>
     </div>
-    <div id="crmTarefas"></div>
     <div class="crm-metricas" id="crmMetricas"></div>
+    <div class="crm-vendedores" id="crmVendedores"></div>
     <div class="kanban" id="kanban"></div>
+    <div id="crmTarefas"></div>
   </section>
 
   <!-- =============== CLIENTES =============== -->
@@ -3935,22 +3975,52 @@
     var lista = carregarCrm();
     renderTarefas(lista);
 
+    // mês corrente, pra "fechado neste mês" refletir a data real do fechamento (não o histórico inteiro)
+    var agora = new Date();
+    var anoAtual = agora.getFullYear(), mesAtual = agora.getMonth();
+    function noMesAtual(iso) {
+      var d = new Date(iso);
+      return !isNaN(d) && d.getFullYear() === anoAtual && d.getMonth() === mesAtual;
+    }
+
     // métricas do topo
-    var ativo = 0, fechados = 0, fechadosQtd = 0, perdidosQtd = 0;
+    var ativo = 0, fechadosMes = 0, fechadosMesQtd = 0, perdidosMesQtd = 0;
+    var porVendedor = {};
     lista.forEach(function (c) {
       var v = Number(c.valorMensal || 0);
-      if (c.etapa === 'fechado') { fechados += v; fechadosQtd++; }
-      else if (c.etapa === 'perdido') { perdidosQtd++; }
-      else { ativo += v; }
+      if (c.etapa === 'fechado') {
+        if (noMesAtual(c.movidoEm)) {
+          fechadosMes += v;
+          fechadosMesQtd++;
+          var nome = c.vendedor || 'Sem vendedor';
+          if (!porVendedor[nome]) porVendedor[nome] = { valor: 0, qtd: 0 };
+          porVendedor[nome].valor += v;
+          porVendedor[nome].qtd++;
+        }
+      } else if (c.etapa === 'perdido') {
+        if (noMesAtual(c.movidoEm)) perdidosMesQtd++;
+      } else {
+        ativo += v;
+      }
     });
-    var decididos = fechadosQtd + perdidosQtd;
-    var taxa = decididos ? Math.round(fechadosQtd * 100 / decididos) : null;
+    var decididosMes = fechadosMesQtd + perdidosMesQtd;
+    var taxa = decididosMes ? Math.round(fechadosMesQtd * 100 / decididosMes) : null;
 
     $('crmMetricas').innerHTML =
       '<div class="metrica"><small>Pipeline ativo (mensal)</small><strong>' + moeda(ativo) + '</strong></div>' +
-      '<div class="metrica"><small>Fechados (mensal)</small><strong>' + moeda(fechados) + '</strong></div>' +
-      '<div class="metrica"><small>Negócios fechados</small><strong>' + fechadosQtd + '</strong></div>' +
-      '<div class="metrica"><small>Taxa de fechamento</small><strong>' + (taxa === null ? '—' : taxa + '%') + '</strong></div>';
+      '<div class="metrica"><small>Fechados neste mês</small><strong>' + moeda(fechadosMes) + '</strong></div>' +
+      '<div class="metrica"><small>Negócios fechados no mês</small><strong>' + fechadosMesQtd + '</strong></div>' +
+      '<div class="metrica"><small>Taxa de fechamento (mês)</small><strong>' + (taxa === null ? '—' : taxa + '%') + '</strong></div>';
+
+    var nomesVendedores = Object.keys(porVendedor).sort(function (a, b) {
+      return porVendedor[b].valor - porVendedor[a].valor;
+    });
+    $('crmVendedores').innerHTML = nomesVendedores.length ? nomesVendedores.map(function (nome) {
+      var v = porVendedor[nome];
+      return '<div class="crm-vendedor-chip"><span class="av">' + escaparHtml(nome.slice(0, 1).toUpperCase()) + '</span>' +
+        '<span class="nome">' + escaparHtml(nome) + '</span>' +
+        '<strong>' + moeda(v.valor) + '</strong><span class="nome">(' + v.qtd + ')</span></div>';
+    }).join('') : '';
 
     // colunas
     var board = $('kanban');
