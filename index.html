@@ -3846,6 +3846,17 @@
     var card = null;
     if (crmIdOrigem) card = lista.find(function (c) { return c.id === crmIdOrigem; });
     if (!card) card = lista.find(function (c) { return c.propostaCodigo === registro.codigo; });
+    // sem vínculo explícito: reaproveita um card já ativo do mesmo cliente (ex.: oportunidade
+    // criada manualmente antes da proposta) em vez de criar um card duplicado direto em "Enviada"
+    if (!card) {
+      var nomeAlvo = (registro.cliente || '').trim().toLowerCase();
+      if (nomeAlvo) {
+        card = lista.find(function (c) {
+          return (c.etapa === 'oportunidade' || c.etapa === 'enviada') &&
+            !c.propostaCodigo && (c.cliente || '').trim().toLowerCase() === nomeAlvo;
+        });
+      }
+    }
     if (!card) {
       card = novoCardCrm();
       card.etapa = 'enviada';
