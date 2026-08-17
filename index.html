@@ -2013,6 +2013,7 @@
   function limparProposta(silencioso) {
     estado.itens = [];
     delete estado.codigo;
+    delete estado.historicoId;
     estado.crmId = '';
     estado.finalizada = false;
     estado.cliente = ''; estado.cnpj = ''; estado.contato = ''; estado.telefone = '';
@@ -2631,8 +2632,16 @@
     var codigo = estado.codigo || proximoCodigo(true);
     estado.codigo = codigo;
 
+    // id estável da proposta: gerado uma vez e mantido nas próximas edições/reenvios.
+    // é a chave usada na mesclagem da sincronização — o "codigo" sozinho pode colidir
+    // se dois aparelhos criarem uma proposta nova ao mesmo tempo sem terem sincronizado
+    // entre si ainda; com o id, nenhuma das duas propostas é perdida nesse caso.
+    var idRegistro = estado.historicoId || ('h' + Date.now() + Math.floor(Math.random() * 100000));
+    estado.historicoId = idRegistro;
+
     var idx = lista.findIndex(function (h) { return h.codigo === codigo; });
     var registro = {
+      id: idRegistro,
       codigo: codigo,
       data: new Date().toISOString(),
       cliente: estado.cliente || '(sem nome)',
@@ -2707,6 +2716,7 @@
         estado = JSON.parse(JSON.stringify(h.estado));
         if (!Array.isArray(estado.itens)) estado.itens = [];
         delete estado.codigo;
+        delete estado.historicoId;
         estado.validade = hojeISO(7);
         preencherFormulario();
         salvarRascunho();
@@ -3200,7 +3210,9 @@
 
     var lista = carregarContratos();
     if (!contrato.codigo) contrato.codigo = proximoCodigoContrato(true);
+    if (!contrato.id) contrato.id = 'ct' + Date.now() + Math.floor(Math.random() * 100000);
     var registro = {
+      id: contrato.id,
       codigo: contrato.codigo,
       data: new Date().toISOString(),
       contrato: JSON.parse(JSON.stringify(contrato))
@@ -4687,10 +4699,22 @@
       ? remoto.empresa : local.empresa;
     if (!empresaF || !empresaF.dados) empresaF = local.empresa;
 
+    // propostas/contratos de aparelhos diferentes podem gerar o mesmo código sequencial
+    // se ainda não tinham sincronizado um com o outro. Mesclar por "codigo" nesse caso
+    // faz um sobrescrever o outro silenciosamente. Mesclando por "id" (com o próprio
+    // código como fallback pra registros antigos, que não tinham id) nenhum dos dois
+    // é perdido — na pior hipótese os dois ficam com o mesmo código por um tempo.
+    function comId(lista) {
+      return (lista || []).map(function (item) {
+        if (item && !item.id) item.id = item.codigo;
+        return item;
+      });
+    }
+
     return {
       atualizadoEm: new Date().toISOString(),
-      historico: fundirPorChave(local.historico, remoto.historico, 'codigo', 'data').filter(naoExcluido('historico', 'codigo')),
-      contratos: fundirPorChave(local.contratos, remoto.contratos, 'codigo', 'data').filter(naoExcluido('contrato', 'codigo')),
+      historico: fundirPorChave(comId(local.historico), comId(remoto.historico), 'id', 'data').filter(naoExcluido('historico', 'codigo')),
+      contratos: fundirPorChave(comId(local.contratos), comId(remoto.contratos), 'id', 'data').filter(naoExcluido('contrato', 'codigo')),
       crm: fundirPorChave(local.crm, remoto.crm, 'id', 'atualizadoEm').filter(naoExcluido('crm', 'id')),
       clientes: fundirPorChave(local.clientes, remoto.clientes, 'id', 'atualizadoEm').filter(naoExcluido('cliente', 'id')),
       catalogo: catalogoF,
