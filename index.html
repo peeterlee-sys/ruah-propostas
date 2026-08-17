@@ -2573,8 +2573,7 @@
     if (!validarAntesDeEnviar()) return;
     renderDocumento();
     imprimirComTitulo('Proposta de Mídia | Ruah');
-    estado.finalizada = true; // proposta entregue: próxima começa zerada
-    salvarRascunho();
+    registrarNoHistorico(); // garante que a proposta entregue fica no histórico, mesmo sem clicar em "Salvar no histórico"
   }
 
   function textoWhatsApp() {
@@ -2607,8 +2606,7 @@
     if (fone && fone.length <= 11) fone = '55' + fone;
     var url = 'https://wa.me/' + fone + '?text=' + encodeURIComponent(textoWhatsApp());
     window.open(url, '_blank');
-    estado.finalizada = true; // proposta entregue: próxima começa zerada
-    salvarRascunho();
+    registrarNoHistorico(); // garante que a proposta entregue fica no histórico, mesmo sem clicar em "Salvar no histórico"
   }
 
   function copiarResumo() {
@@ -2621,10 +2619,13 @@
     } else {
       window.prompt('Copie o resumo:', texto);
     }
+    registrarNoHistorico(); // garante que a proposta entregue fica no histórico, mesmo sem clicar em "Salvar no histórico"
   }
 
-  function salvarNoHistorico() {
-    if (!validarAntesDeEnviar()) return;
+  // núcleo de gravação: usado tanto pelo botão explícito quanto pelas ações de entrega
+  // (imprimir, whatsapp, copiar resumo) — qualquer uma delas registra a proposta.
+  function registrarNoHistorico() {
+    if (!validarAntesDeEnviar()) return null;
     var c = calcular();
     var lista = carregarHistorico();
     var codigo = estado.codigo || proximoCodigo(true);
@@ -2656,7 +2657,12 @@
     estado.finalizada = true;
 
     salvarRascunho();
-    toast('💾 Proposta ' + codigo + ' salva no histórico e no funil do CRM!');
+    return codigo;
+  }
+
+  function salvarNoHistorico() {
+    var codigo = registrarNoHistorico();
+    if (codigo) toast('💾 Proposta ' + codigo + ' salva no histórico e no funil do CRM!');
   }
 
   function renderHistorico() {
