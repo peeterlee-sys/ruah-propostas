@@ -4960,12 +4960,16 @@
     return JSON.stringify(c);
   }
 
+  var syncRetryTimer = null;
+  var syncRetryAtraso = 15000; // cresce a cada falha (15s, 30s, 60s...), até um teto; volta ao normal quando sincroniza
+
   function sincronizar(motivo) {
     var cfg = configSync();
     if (!cfg.token || syncRodando) return Promise.resolve();
     if (motivo === 'foco' && Date.now() - syncUltimaVez < 20000) return Promise.resolve();
     syncRodando = true;
     setChip('rodando');
+    clearTimeout(syncRetryTimer);
 
     var tentativa = 0;
     function rodar() {
@@ -4988,10 +4992,17 @@
       cfg.ultimoSync = new Date().toISOString();
       salvarConfigSync(cfg);
       syncUltimaVez = Date.now();
+      syncRetryAtraso = 15000;
       setChip('ok');
     }).catch(function (e) {
       console.error('sync:', e);
       setChip('erro');
+      // uma falha de rede (ex.: instabilidade momentânea) não deve depender de alguém notar
+      // o chip vermelho e clicar de novo — tenta sozinho de novo, com espera crescente, até
+      // conseguir. O que já foi salvo neste aparelho continua intacto localmente enquanto isso.
+      clearTimeout(syncRetryTimer);
+      syncRetryTimer = setTimeout(function () { sincronizar('retentativa'); }, syncRetryAtraso);
+      syncRetryAtraso = Math.min(syncRetryAtraso * 2, 5 * 60 * 1000);
     }).then(function () {
       syncRodando = false;
     });
