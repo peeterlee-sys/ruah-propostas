@@ -21,10 +21,10 @@
     --texto: #1f2933;
     --muted: #697586;
     --linha: #e6ebf2;
-    --verde: #14805e;
-    --verde-claro: #e3f5ee;
-    --vermelho: #b3261e;
-    --vermelho-claro: #fdeceb;
+    --verde: #2c7a52;
+    --verde-claro: rgba(44, 122, 82, .14);
+    --vermelho: #c0392b;
+    --vermelho-claro: rgba(192, 57, 43, .12);
     --sombra: 0 1px 3px rgba(20, 36, 62, 0.05);
     --sombra-hover: 0 6px 20px rgba(20, 36, 62, 0.10);
     --borda-card: 1px solid rgba(20, 36, 62, 0.07);
@@ -41,6 +41,41 @@
     color: var(--texto);
     -webkit-font-smoothing: antialiased;
   }
+
+  /* ===================== LOGIN (vitrine, sem autenticação real) ===================== */
+  .tela-login { display: flex; min-height: 100vh; flex-wrap: wrap; background: var(--fundo); }
+  body.logado .tela-login { display: none; }
+  body:not(.logado) .app-shell { display: none; }
+
+  .login-navy {
+    flex: 1 1 420px; background: linear-gradient(180deg, var(--azul), var(--azul-escuro)); color: #fff;
+    padding: 56px 56px 44px; display: flex; flex-direction: column; justify-content: center;
+    min-height: 100vh; position: relative;
+  }
+  .login-logo { width: 186px; height: auto; display: block; margin-bottom: 40px; }
+  .login-titulo { font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; max-width: 420px; }
+  .login-tagline { margin: 16px 0 0; font-size: 14px; line-height: 1.7; color: rgba(255,255,255,.62); max-width: 440px; }
+  .login-selos { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
+  .login-selo { font-size: 11.5px; border: 1px solid rgba(255,255,255,.18); border-radius: 20px; padding: 7px 13px; color: rgba(255,255,255,.7); }
+  .login-copyright { position: absolute; left: 56px; bottom: 44px; font-size: 11.5px; color: rgba(255,255,255,.4); }
+
+  .login-form-area { flex: 1 1 420px; display: flex; align-items: center; justify-content: center; padding: 48px 32px; min-height: 100vh; }
+  .login-form-box { width: 100%; max-width: 380px; }
+  .login-form-box h1 { margin: 0; font-size: 25px; font-weight: 700; letter-spacing: -.02em; color: var(--azul); }
+  .login-sub { margin: 8px 0 28px; font-size: 13.5px; color: rgba(20,36,62,.55); }
+  .login-form-box label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 7px; color: var(--texto); }
+  .login-form-box input[type="email"], .login-form-box input[type="password"] { margin-bottom: 16px; }
+
+  .login-linha-opcoes { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: -2px; flex-wrap: wrap; }
+  .login-lembrar { display: flex !important; align-items: center; gap: 8px; font-size: 12.5px; color: rgba(20,36,62,.65); cursor: pointer; margin: 0 !important; font-weight: 400 !important; }
+  .login-lembrar input { width: 15px; height: 15px; accent-color: var(--azul); margin: 0 !important; flex: none; }
+  .login-linha-opcoes a { font-size: 12.5px; color: var(--dourado-escuro); font-weight: 600; }
+
+  .login-erro { margin-top: 16px; background: rgba(179,38,30,.09); border-radius: 10px; padding: 11px 14px; font-size: 12.5px; font-weight: 600; color: var(--vermelho); }
+
+  .login-btn-entrar { width: 100%; margin-top: 22px; padding: 15px; font-size: 14.5px; }
+
+  .login-rodape { margin-top: 22px; padding-top: 20px; border-top: 1px solid rgba(20,36,62,.1); font-size: 12px; color: rgba(20,36,62,.5); line-height: 1.65; }
 
   /* ===================== SHELL (sidebar + header) ===================== */
   .app-shell { display: flex; height: 100vh; overflow: hidden; }
@@ -108,7 +143,12 @@
   }
   .sidebar.recolhida .aba .contador { display: none; }
 
-  .sidebar-foot { padding: 10px 10px 18px; border-top: 1px solid rgba(255,255,255,.08); }
+  .sidebar-foot { padding: 12px 10px 16px; border-top: 1px solid rgba(255,255,255,.08); }
+
+  .sidebar-user { padding: 2px 12px 10px; }
+  .sidebar-user-nome { font-size: 12.5px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sidebar-user-cargo { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+  .sidebar.recolhida .sidebar-user { display: none; }
 
   .sidebar-toggle {
     display: flex;
@@ -782,6 +822,42 @@
   .btn-mini.perigo { color: var(--vermelho); border-color: #f3c2bf; }
   .btn-mini.perigo:hover { background: var(--vermelho-claro); }
 
+  /* ===================== CLIENTES (tabela) ===================== */
+  .clientes-tabela { background: white; border: var(--borda-card); border-radius: var(--radius); box-shadow: var(--sombra); overflow: hidden; }
+  .clientes-scroll { overflow-x: auto; }
+
+  .clientes-header, .clientes-row {
+    display: grid;
+    grid-template-columns: minmax(170px,1.3fr) minmax(160px,1.2fr) minmax(110px,1fr) 90px 90px 120px minmax(190px,auto);
+    gap: 14px;
+    align-items: center;
+    min-width: 1020px;
+  }
+
+  .clientes-header {
+    padding: 14px 24px;
+    background: #f7f8fb;
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: rgba(20,36,62,.45);
+  }
+
+  .clientes-row { padding: 14px 24px; border-top: 1px solid rgba(20,36,62,.06); font-size: 13px; }
+  .clientes-row:hover { background: #fbfcfe; }
+
+  .clientes-row .nome-cell { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .clientes-row .nome-txt { font-weight: 600; color: var(--texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .clientes-avatar {
+    width: 30px; height: 30px; border-radius: 9px; flex: none;
+    background: rgba(224,195,137,.35); color: var(--dourado-escuro);
+    font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .clientes-row .muted { color: rgba(20,36,62,.6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .clientes-row .faturado { font-weight: 700; color: var(--texto); }
+
   /* ===================== MODAL ===================== */
   .modal-fundo {
     position: fixed;
@@ -886,6 +962,7 @@
 
   .pnl-occ-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 16px; }
   .pnl-occ-card { background: white; border: 1px solid var(--linha); border-radius: 14px; padding: 18px 20px; }
+  .pnl-fontes { text-align: center; font-size: 11.5px; color: rgba(20,36,62,.45); margin-top: 26px; }
   .pnl-occ-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 8px; flex-wrap: wrap; }
   .pnl-occ-head .t { font-size: 13.5px; font-weight: 700; color: var(--azul); }
   .pnl-occ-head .t .src { font-weight: 500; color: var(--muted); font-size: 12px; }
@@ -940,7 +1017,7 @@
     .grade { grid-template-columns: repeat(2, 1fr); }
     main { padding: 18px 16px 130px; }
     .sidebar { width: 72px; }
-    .sidebar .aba-label, .sidebar .logo-sidebar { display: none; }
+    .sidebar .aba-label, .sidebar .logo-sidebar, .sidebar .sidebar-user { display: none; }
     .sidebar-head { padding: 20px 12px; }
     .topo-fixo { padding: 16px 16px 14px; }
     .doc-capa, .doc-corpo { padding-left: 26px; padding-right: 26px; }
@@ -1262,7 +1339,7 @@
   @media print {
     @page { size: A4; margin: 0; }
     body { background: white; }
-    .sidebar, .topo-fixo, .doc-acoes, .barra-carrinho, .toast { display: none !important; }
+    .sidebar, .topo-fixo, .doc-acoes, .barra-carrinho, .toast, .tela-login { display: none !important; }
     .app-shell { display: block !important; height: auto !important; overflow: visible !important; }
     .app-main { overflow: visible !important; }
     main { padding: 0; max-width: none; }
@@ -1300,6 +1377,50 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
+
+<!-- Tela de login: só vitrine visual, não protege nada de verdade (não há backend de
+     autenticação neste app estático). A área financeira continua com sua própria senha,
+     separada, em #modalSenhaPainel. -->
+<div class="tela-login" id="telaLogin">
+  <div class="login-navy">
+    <div>
+      <img id="logoLoginBranca" class="login-logo" alt="RUAH" />
+      <div class="login-titulo">Onde marcas ganham vida</div>
+      <p class="login-tagline">Gerador de Propostas · Mídia OOH &amp; DOOH · Balneário Camboriú. Catálogo de pontos, propostas, contratos e CRM em um só lugar.</p>
+      <div class="login-selos">
+        <span class="login-selo">42 pontos monitorados</span>
+        <span class="login-selo">Painéis de LED e estáticos</span>
+      </div>
+    </div>
+    <div class="login-copyright">© 2026 Ruah Publicidade · Balneário Camboriú/SC</div>
+  </div>
+  <div class="login-form-area">
+    <div class="login-form-box">
+      <h1>Acessar o sistema</h1>
+      <p class="login-sub">Use o e-mail e a senha da sua conta Ruah.</p>
+
+      <label for="loginEmail">E-mail</label>
+      <input id="loginEmail" type="email" placeholder="nome@ruah.com.br" autocomplete="username" />
+
+      <label for="loginSenha">Senha</label>
+      <input id="loginSenha" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+      <div class="login-linha-opcoes">
+        <label class="login-lembrar">
+          <input id="loginLembrar" type="checkbox" checked />
+          Manter conectado
+        </label>
+        <a href="#recuperar" onclick="return false;">Esqueci minha senha</a>
+      </div>
+
+      <div class="login-erro" id="loginErro" style="display:none;"></div>
+
+      <button class="btn btn-primario login-btn-entrar" id="btnEntrarLogin" type="button">Entrar</button>
+
+      <div class="login-rodape">Acesso restrito à equipe comercial. As abas financeiras ficam visíveis apenas para o administrador.</div>
+    </div>
+  </div>
+</div>
 
 <div class="app-shell">
   <aside class="sidebar" id="sidebar">
@@ -1350,6 +1471,14 @@
       </button>
     </nav>
     <div class="sidebar-foot">
+      <div class="sidebar-user">
+        <div class="sidebar-user-nome" id="sidebarUsuario">Peeter Lee Grando</div>
+        <div class="sidebar-user-cargo">Administrador</div>
+      </div>
+      <div class="sidebar-toggle" id="btnSair" title="Sair">
+        <svg width="17" height="17" viewBox="0 0 18 18"><path d="M11 13.5H4.5v-9H11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9.5 9h5.5m-2.2-2.4L15 9l-2.2 2.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="aba-label">Sair</span>
+      </div>
       <div class="sidebar-toggle" id="btnRecolherSidebar" title="Recolher menu">
         <svg width="17" height="17" viewBox="0 0 18 18"><path d="M11 4L5 9l6 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span class="aba-label">Recolher menu</span>
@@ -1432,6 +1561,7 @@
           </div>
         </div>
       </div>
+      <div class="pnl-fontes">Fontes: Bom Controle (financeiro e estáticos) · ControlED e Inviron (slots de LED)</div>
     </div>
   </section>
 
@@ -1712,7 +1842,14 @@
       <div class="busca"><input id="buscaClientes" placeholder="Buscar por nome, CNPJ ou contato..." /></div>
       <button class="btn btn-dourado" id="btnNovoCliente" type="button">+ Novo cliente</button>
     </div>
-    <div class="hist-lista" id="listaClientes"></div>
+    <div class="clientes-tabela">
+      <div class="clientes-scroll">
+        <div class="clientes-header">
+          <div>Cliente</div><div>Contato</div><div>Cidade</div><div>Propostas</div><div>Contratos</div><div>Faturado</div><div></div>
+        </div>
+        <div id="listaClientes"></div>
+      </div>
+    </div>
   </section>
 </main>
   </div>
@@ -3668,6 +3805,24 @@
     };
   }
 
+  /* leitura pura (não grava nada): quantas propostas/contratos esse cliente já teve e
+     quanto já faturou — casando por CNPJ (ou nome, se não tiver CNPJ), igual encontrarCliente() */
+  function metricasCliente(c) {
+    var doc = normDoc(c.doc);
+    var nome = (c.razao || '').trim().toLowerCase();
+    function bate(outroDoc, outroNome) {
+      if (doc) return normDoc(outroDoc) === doc;
+      return !!nome && (outroNome || '').trim().toLowerCase() === nome;
+    }
+    var props = carregarHistorico().filter(function (h) { return bate(h.estado && h.estado.cnpj, h.cliente); });
+    var contratosCli = carregarContratos().filter(function (ct) {
+      var cc = ct.contrato && ct.contrato.cliente;
+      return cc && bate(cc.doc, cc.razao);
+    });
+    var faturado = contratosCli.reduce(function (s, ct) { return s + Number(ct.contrato.total || 0); }, 0);
+    return { propostas: props.length, contratos: contratosCli.length, faturado: faturado };
+  }
+
   function renderClientes() {
     var box = $('listaClientes');
     var filtro = ($('buscaClientes').value || '').toLowerCase();
@@ -3690,19 +3845,23 @@
 
     lista.forEach(function (c) {
       var div = document.createElement('div');
-      div.className = 'hist-item';
-      var linhas = [];
-      if (c.contato || c.telefone) linhas.push('👤 ' + [c.contato, c.telefone].filter(Boolean).join(' · '));
-      if (c.email) linhas.push('✉️ ' + c.email);
-      var endereco = [c.logradouro, c.numero].filter(Boolean).join(', ');
-      if (endereco || c.cidade) linhas.push('📍 ' + [endereco, c.bairro, c.cidade && (c.cidade + '/' + (c.uf || ''))].filter(Boolean).join(' — '));
+      div.className = 'clientes-row';
+      var m = metricasCliente(c);
+      var iniciais = (c.razao || '').split(' ').filter(function (w) { return w.length > 2; }).slice(0, 2)
+        .map(function (w) { return w[0]; }).join('').toUpperCase() || '—';
+      var contatoTexto = [c.contato, c.telefone].filter(Boolean).join(' · ') || (c.email || '—');
+      var cidadeTexto = c.cidade ? (c.cidade + (c.uf ? '/' + c.uf : '')) : '—';
 
       div.innerHTML =
-        '<div class="info">' +
-          '<div class="codigo">' + (c.doc ? escaparHtml(formatarCnpj(c.doc)) : 'sem CNPJ') + '</div>' +
-          '<div class="cliente">' + escaparHtml(c.razao || '(sem nome)') + '</div>' +
-          '<div class="detalhes">' + escaparHtml(linhas.join('  ·  ')) + '</div>' +
+        '<div class="nome-cell">' +
+          '<div class="clientes-avatar">' + escaparHtml(iniciais) + '</div>' +
+          '<span class="nome-txt">' + escaparHtml(c.razao || '(sem nome)') + '</span>' +
         '</div>' +
+        '<div class="muted">' + escaparHtml(contatoTexto) + '</div>' +
+        '<div class="muted">' + escaparHtml(cidadeTexto) + '</div>' +
+        '<div class="muted">' + m.propostas + '</div>' +
+        '<div class="muted">' + m.contratos + '</div>' +
+        '<div class="faturado">' + moeda(m.faturado) + '</div>' +
         '<div class="hist-acoes">' +
           '<button class="btn-mini" data-acao="proposta" type="button">📝 Proposta</button>' +
           '<button class="btn-mini" data-acao="editar" type="button">✏️ Editar</button>' +
@@ -4229,6 +4388,44 @@
   }
 
   /* ============================================================
+     LOGIN — vitrine visual, SEM autenticação real (o app é
+     estático, sem backend de credenciais). Qualquer e-mail/senha
+     preenchidos libera o acesso; a proteção de verdade continua
+     sendo a senha da área financeira, à parte, mais abaixo.
+  ============================================================ */
+  var CHAVE_LOGIN = 'ruah_logado_v1';
+
+  function estaLogado() {
+    return localStorage.getItem(CHAVE_LOGIN) === '1' || sessionStorage.getItem(CHAVE_LOGIN) === '1';
+  }
+
+  function aplicarEstadoLogin() {
+    document.body.classList.toggle('logado', estaLogado());
+  }
+
+  function tentarEntrar() {
+    var email = $('loginEmail').value.trim();
+    var senha = $('loginSenha').value.trim();
+    if (!email || !senha) {
+      $('loginErro').textContent = 'Informe e-mail e senha para continuar.';
+      $('loginErro').style.display = '';
+      return;
+    }
+    $('loginErro').style.display = 'none';
+    if ($('loginLembrar').checked) localStorage.setItem(CHAVE_LOGIN, '1');
+    else sessionStorage.setItem(CHAVE_LOGIN, '1');
+    $('sidebarUsuario').textContent = email.split('@')[0] || 'Peeter Lee Grando';
+    aplicarEstadoLogin();
+  }
+
+  function sairDoApp() {
+    localStorage.removeItem(CHAVE_LOGIN);
+    sessionStorage.removeItem(CHAVE_LOGIN);
+    $('loginSenha').value = '';
+    aplicarEstadoLogin();
+  }
+
+  /* ============================================================
      VISÃO GERAL / PAINÉIS — dados financeiros (Bom Controle +
      ControlED/Inviron), servidos por api/painel-data.js e
      protegidos por senha. Nada aqui muda o CRM/histórico: só lê.
@@ -4534,18 +4731,19 @@
         '<span class="pnl-badge-dias ' + classeDiasVencimento(d) + '">' + rotuloDiasVencimento(d) + '</span></div>';
     }).join('') : '<p style="color:var(--muted);font-size:13px;">Nenhum contrato de LED vencendo nos próximos 60 dias.</p>';
 
+    var CORES_FUNIL = { oportunidade: 'rgba(20,36,62,.2)', enviada: 'var(--azul)', fechado: '#2c9c5a', perdido: 'var(--vermelho)' };
     var maxSoma = 0;
     var etapasCalc = ETAPAS.map(function (etapa) {
       var cards = listaCrm.filter(function (c) { return c.etapa === etapa.id; });
       var soma = cards.reduce(function (a, c) { return a + Number(c.valorMensal || 0); }, 0);
       maxSoma = Math.max(maxSoma, soma);
-      return { nome: etapa.nome, qtd: cards.length, soma: soma };
+      return { nome: etapa.nome, qtd: cards.length, soma: soma, cor: CORES_FUNIL[etapa.id] || 'var(--dourado)' };
     });
     $('vgFunil').innerHTML = etapasCalc.map(function (e) {
       var pct = maxSoma ? Math.round(e.soma / maxSoma * 100) : 0;
       return '<div class="pnl-funil-linha">' +
         '<span class="rot">' + e.nome + ' (' + e.qtd + ')</span>' +
-        '<div class="pnl-funil-barra"><div class="pnl-funil-fill" style="width:' + Math.max(pct, e.qtd ? 3 : 0) + '%"></div></div>' +
+        '<div class="pnl-funil-barra"><div class="pnl-funil-fill" style="width:' + Math.max(pct, e.qtd ? 3 : 0) + '%;background:' + e.cor + '"></div></div>' +
         '<span class="val">' + moeda(e.soma) + '/mês</span>' +
         '</div>';
     }).join('');
@@ -4839,6 +5037,10 @@
       localStorage.setItem('sidebarRecolhida', recolhida ? '1' : '0');
     });
 
+    $('btnEntrarLogin').addEventListener('click', tentarEntrar);
+    $('loginSenha').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') tentarEntrar(); });
+    $('btnSair').addEventListener('click', sairDoApp);
+
     document.querySelectorAll('#chipsCategoria .chip').forEach(function (chip) {
       chip.addEventListener('click', function () {
         document.querySelectorAll('#chipsCategoria .chip').forEach(function (c) { c.classList.remove('ativa'); });
@@ -5101,6 +5303,8 @@
   ============================================================ */
   function init() {
     $('logoSidebar').src = LOGO_BRANCA;
+    $('logoLoginBranca').src = LOGO_BRANCA;
+    aplicarEstadoLogin();
     carregarRascunho();
     preencherFormulario();
     registrarEventos();
