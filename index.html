@@ -396,6 +396,33 @@
 
   .btn-add.no-carrinho { background: var(--verde-claro); color: var(--verde); }
 
+  .qtd-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--verde-claro);
+    color: var(--verde);
+    border-radius: 12px;
+    padding: 5px 7px;
+  }
+  .qtd-stepper button {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    border: 0;
+    background: white;
+    color: var(--verde);
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qtd-stepper button:hover { background: var(--verde); color: white; }
+  .qtd-stepper .qtd-num { font-weight: 800; font-size: 13.5px; min-width: 14px; text-align: center; }
+
   .link-maps {
     font-size: 12.5px;
     color: var(--azul);
@@ -2401,7 +2428,8 @@
     }
 
     lista.forEach(function (p) {
-      var noCarrinho = estado.itens.some(function (i) { return i.refId === p.id; });
+      var qtd = estado.itens.filter(function (i) { return i.refId === p.id; }).length;
+      var noCarrinho = qtd > 0;
       var card = document.createElement('div');
       card.className = 'card-ponto' + (noCarrinho ? ' selecionado' : '');
 
@@ -2429,9 +2457,11 @@
         '</div>' +
         '<div class="card-rodape">' +
           '<div class="preco"><strong>' + moeda(p.valor) + '</strong><small>por mês</small></div>' +
-          '<button class="btn-add' + (noCarrinho ? ' no-carrinho' : '') + '" type="button">' +
-            (noCarrinho ? '✓ Na proposta' : '+ Adicionar') +
-          '</button>' +
+          (noCarrinho
+            ? '<div class="qtd-stepper"><button type="button" data-acao="menos" title="Remover uma unidade">−</button>' +
+              '<span class="qtd-num">' + qtd + '</span>' +
+              '<button type="button" data-acao="mais" title="Adicionar outra unidade">+</button></div>'
+            : '<button class="btn-add" type="button" data-acao="mais">+ Adicionar</button>') +
         '</div>';
 
       card.querySelector('.btn-editar-ponto').addEventListener('click', function (ev) {
@@ -2439,14 +2469,19 @@
         abrirModal(p.id);
       });
 
-      card.querySelector('.btn-add').addEventListener('click', function () {
-        if (noCarrinho) {
-          estado.itens = estado.itens.filter(function (i) { return i.refId !== p.id; });
-          toast('Painel removido da proposta');
-        } else {
-          adicionarItem(p);
-          toast('✓ ' + p.nome + ' adicionado');
-        }
+      var btnMais = card.querySelector('[data-acao="mais"]');
+      if (btnMais) btnMais.addEventListener('click', function () {
+        adicionarItem(p);
+        toast('✓ ' + p.nome + ' adicionado' + (qtd > 0 ? ' (' + (qtd + 1) + 'x)' : ''));
+        salvarRascunho();
+        renderCatalogo();
+        atualizarBarra();
+      });
+
+      var btnMenos = card.querySelector('[data-acao="menos"]');
+      if (btnMenos) btnMenos.addEventListener('click', function () {
+        removerUmItem(p.id);
+        toast('Uma unidade de ' + p.nome + ' removida');
         salvarRascunho();
         renderCatalogo();
         atualizarBarra();
@@ -2469,6 +2504,14 @@
       foto: p.foto || '',
       valor: Number(p.valor || 0)
     });
+  }
+
+  // remove só uma unidade (a última adicionada) de um ponto do catálogo — os demais,
+  // se houver mais de um na proposta, continuam intactos
+  function removerUmItem(refId) {
+    for (var i = estado.itens.length - 1; i >= 0; i--) {
+      if (estado.itens[i].refId === refId) { estado.itens.splice(i, 1); return; }
+    }
   }
 
   function atualizarBarra() {
