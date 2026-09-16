@@ -314,6 +314,48 @@ const PONTOS = [
     "lat": -26.9728729,
     "lng": -48.6486129,
     "foto": "assets/paineis/rua-9.jpg"
+  },
+  {
+    "id": 10,
+    "cod": "SHOP-01",
+    "nome": "Shopping Atlântico - Totem de LED",
+    "categoria": "Atlântico Shopping",
+    "bairro": "Centro",
+    "endereco": "Av. Brasil, 1271 - Centro, Balneário Camboriú - SC",
+    "tamanho": "1x1,5m",
+    "resolucao": "256x512px",
+    "imp": 500000,
+    "preco": 500,
+    "lat": -26.985501,
+    "lng": -48.635136
+  },
+  {
+    "id": 11,
+    "cod": "SHOP-02",
+    "nome": "Shopping Atlântico - Testeira do Estacionamento",
+    "categoria": "Atlântico Shopping",
+    "bairro": "Centro",
+    "endereco": "Av. Brasil, 1271 - Centro, Balneário Camboriú - SC",
+    "tamanho": "6x1m",
+    "resolucao": "1440x200px",
+    "imp": 500000,
+    "preco": 650,
+    "lat": -26.985501,
+    "lng": -48.635136
+  },
+  {
+    "id": 12,
+    "cod": "SHOP-03",
+    "nome": "Shopping Atlântico - Mega Painel",
+    "categoria": "Atlântico Shopping",
+    "bairro": "Centro",
+    "endereco": "Av. Brasil, 1271 - Centro, Balneário Camboriú - SC",
+    "tamanho": "10x2m",
+    "resolucao": "2400x360px",
+    "imp": 500000,
+    "preco": 1500,
+    "lat": -26.985501,
+    "lng": -48.635136
   }
 ];
 const CENTRO = [-26.991,-48.637], ZOOM = 14;
@@ -411,7 +453,7 @@ function render(){
     + '<div class="detail-addr">'+p.endereco+'</div>'
     + '<div class="pill-specs"><span class="pill-spec">'+p.tamanho+'</span><span class="pill-spec">'+p.resolucao+'</span></div>'
     + '<div class="impacto-linha">'+K(p.imp)+' impactos/mês</div>'
-    + '<div class="insercoes-linha">'+p.insercoes+'</div>'
+    + (p.insercoes ? '<div class="insercoes-linha">'+p.insercoes+'</div>' : '')
     + '<a class="link-maps" href="'+mapsLink(p)+'" target="_blank" rel="noopener">Ver no Google Maps ↗</a>'
     + (MOSTRAR_PRECO ? '<div style="display:flex;align-items:baseline;gap:8px;margin-top:16px">'
       + '<span class="num" style="font-size:24px;color:var(--gold-dark)">'+BRL(p.preco)+'</span>'
