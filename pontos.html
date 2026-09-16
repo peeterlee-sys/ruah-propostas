@@ -359,6 +359,48 @@ const PONTOS = [
     "lat": -26.985501,
     "lng": -48.635136,
     "foto": "assets/paineis/shop-3.jpg"
+  },
+  {
+    "id": 13,
+    "cod": "OUT-01",
+    "nome": "Outdoor 01 - Rua Marrocos",
+    "categoria": "Outdoor",
+    "bairro": "Nações",
+    "endereco": "Av. do Estado, 2800 - esquina com a Rua Marrocos, Balneário Camboriú - SC",
+    "tamanho": "6,12 x 3,84m",
+    "material": "Lona",
+    "preco": 2500,
+    "lat": -26.9795,
+    "lng": -48.6446,
+    "foto": "assets/paineis/outdoor-1.jpg"
+  },
+  {
+    "id": 14,
+    "cod": "EMP-04",
+    "nome": "Empena 04 - Ed. Letícia",
+    "categoria": "Empena",
+    "bairro": "Nações",
+    "endereco": "Rua Peru, 12 - esquina com a Av. do Estado, Balneário Camboriú - SC",
+    "tamanho": "3,05 x 8,60m",
+    "material": "Lona",
+    "preco": 2500,
+    "lat": -26.976,
+    "lng": -48.6465,
+    "foto": "assets/paineis/empena-4.jpg"
+  },
+  {
+    "id": 15,
+    "cod": "EMP-06",
+    "nome": "Empena 06 - Dupla Edifício Rosamonte",
+    "categoria": "Empena",
+    "bairro": "Centro",
+    "endereco": "3ª Avenida, 1150, Balneário Camboriú - SC",
+    "tamanho": "4,5 x 20,7m",
+    "material": "Lona",
+    "preco": 20000,
+    "lat": -26.9990,
+    "lng": -48.6317,
+    "foto": "assets/paineis/empena-6.jpg"
   }
 ];
 const CENTRO = [-26.991,-48.637], ZOOM = 14;
@@ -408,7 +450,7 @@ const mapsLink = p => 'https://maps.google.com/?q='+p.lat+','+p.lng;
 function render(){
   document.getElementById('k-total').textContent    = PONTOS.length;
   document.getElementById('k-bairros').textContent  = bairros.length;
-  document.getElementById('k-imp').textContent      = K(PONTOS.reduce((s,p)=>s+p.imp,0));
+  document.getElementById('k-imp').textContent      = K(PONTOS.reduce((s,p)=>s+(p.imp||0),0));
 
   const fc = document.getElementById('filtersCat');
   if(!fc.childElementCount)
@@ -431,7 +473,7 @@ function render(){
       + '<div style="min-width:0;flex:1">'
         + '<div class="row-code">'+p.cod+'</div>'
         + '<div class="row-name">'+p.nome+'</div>'
-        + '<div class="row-meta"><b>'+p.tamanho+'</b><span>'+K(p.imp)+' impactos/mês</span></div>'
+        + '<div class="row-meta"><b>'+p.tamanho+'</b>'+(p.imp ? '<span>'+K(p.imp)+' impactos/mês</span>' : (p.material ? '<span>'+p.material+'</span>' : ''))+'</div>'
       + '</div></button>').join('')
       : '<div class="vazio">Nenhum ponto nesta categoria ainda.</div>')
     + '<div class="rodape-side">Ruah Publicidade · Balneário Camboriú/SC · Onde marcas ganham vida</div>';
@@ -454,8 +496,8 @@ function render(){
     + '<div class="detail-code">'+p.cod+'</div>'
     + '<div class="detail-name">'+p.nome+'</div>'
     + '<div class="detail-addr">'+p.endereco+'</div>'
-    + '<div class="pill-specs"><span class="pill-spec">'+p.tamanho+'</span><span class="pill-spec">'+p.resolucao+'</span></div>'
-    + '<div class="impacto-linha">'+K(p.imp)+' impactos/mês</div>'
+    + '<div class="pill-specs"><span class="pill-spec">'+p.tamanho+'</span>'+((p.resolucao||p.material) ? '<span class="pill-spec">'+(p.resolucao||p.material)+'</span>' : '')+'</div>'
+    + (p.imp ? '<div class="impacto-linha">'+K(p.imp)+' impactos/mês</div>' : '')
     + (p.insercoes ? '<div class="insercoes-linha">'+p.insercoes+'</div>' : '')
     + '<a class="link-maps" href="'+mapsLink(p)+'" target="_blank" rel="noopener">Ver no Google Maps ↗</a>'
     + (MOSTRAR_PRECO ? '<div style="display:flex;align-items:baseline;gap:8px;margin-top:16px">'
