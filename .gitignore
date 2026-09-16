@@ -1,2 +1,3 @@
 # dados financeiros sensiveis - nunca commitar (buscados via GitHub API em runtime)
 api/_data/
+**/.DS_Store
